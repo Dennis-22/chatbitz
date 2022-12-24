@@ -7,7 +7,7 @@
     "client": "cd client && npm run dev",
     "build": "cd client && npm run build",
     "server": "cd server && nodemon server",
-    "start:prod": "cd server && npm run start"
+    "start": "cd server && npm run start"
   },
   "keywords": [],
   "author": "",
