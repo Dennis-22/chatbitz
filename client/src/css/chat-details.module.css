@@ -1,0 +1,100 @@
+.body{
+    width:25%;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* background-color: var(--glass); */
+}
+
+.detailsWrap{
+    background-color: var(--glass);
+    width: 100%;
+    border-radius: 5px;
+}
+
+.chatDetails{
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.chatName{
+    margin-top: 10px;
+    font-weight: var(--bold-weight);
+}
+
+.members{
+    padding: 10px;
+}
+
+.membersText{
+    color: var(--faint);
+    font-size: var(--small);
+    font-weight: var(--semi-bold-weight);
+}
+
+.membersWrap{
+    margin-top: 10px;
+    /* background-color: var(--glass); */
+    padding: 20px;
+
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+
+    border-radius: 5px;
+    max-height: 400px;
+    background-color: var(--background-color);
+    overflow-y: auto;
+}
+
+.member{
+    display: flex;
+    gap: 5px;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+}
+
+.memberName{
+    font-size: var(--tiny);
+    color: var(--white-2);
+}
+
+.admin{
+    color: var(--brown);
+    font-size: var(--tiny);
+}
+
+.you{
+    font-size: var(--tiny);
+}
+
+/* mobile */
+.mobChatDetails{
+    position: fixed;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: var(--popup-background);
+    display: flex;
+    flex-direction: column;
+}
+
+.mobChatDetailsContent{
+    flex: 1;
+    background-color: var(--background-color);
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+.empty{
+    height: 25%;
+}
+
+@media screen and (max-width: 770px) {
+    .detailsWrap{height: 100%;}
+}

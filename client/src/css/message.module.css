@@ -1,0 +1,131 @@
+.body{
+    height: 100vh;
+    flex:1;
+    display: flex;
+    flex-direction: column;
+}
+
+
+/* Styles For Header */
+
+.header{
+    background-color: var(--glass);
+    border-bottom: solid 1px var(--border-color);
+}
+
+.head{
+    padding:10px;
+    display: flex;
+}
+
+.details{
+    width: 90%;
+    display: flex;
+    align-items: center;
+}
+
+.name{
+    margin: 0 10px;
+}
+
+.options{
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.utils{
+    margin-top: 10px;
+}
+
+.membersWrap{
+    display: flex;
+    align-items: center;
+}
+
+.members{
+    color: var(--faint);
+    font-weight: var(--semi-bold-weight);
+    font-size: var(--small);
+    margin-left: 10px;
+}
+
+.typing{
+    color: var(--faint);
+    font-size: var(--tiny);
+    margin-top: 5px;
+}
+
+.personTyping{
+    color: yellow;
+}
+
+/* Styles For Input */
+.inputContainer{
+    position: relative;
+}
+
+.input{
+    display: flex;
+}
+
+
+.inputWrap{
+    flex: 1;
+    display: flex;
+    background-color: var(--glass);
+    border-top: solid 1px var(--border-color);
+    border-radius: 2px;
+}
+
+.textInput{
+    flex: 1;
+    padding: 8px 15px;
+    background: transparent;
+    color: #fff;
+    border: none;
+    outline: none;
+}
+
+.inputUtils{
+    width: 15%;
+    background-color: rgba(13, 78, 78, 0.938);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    border-radius: 2px;
+}
+
+.inputIcon{
+    cursor: pointer;
+}
+
+.emojiPicker{
+    position: absolute;
+    width: fit-content;
+    bottom:40px;
+    right: 0;
+    width: 400px;
+}
+
+.emoPick{
+    width: 100px;
+}
+
+/* for leave and show mobile chat details */
+@media screen and (max-width:1000px) {
+    .details{width: 80%;}
+    .options{justify-content: space-between;}
+}
+
+@media screen and (max-width: 450px) {
+    .inputUtils{width: 23%;}
+    .emojiPicker{width: 300px;}
+}
+
+/* target to smallest device  (galaxy fold) */
+@media screen and (max-width: 290px) {
+    .textInput{padding: 8px 10px;}
+    .inputUtils{width: 30%;}
+}

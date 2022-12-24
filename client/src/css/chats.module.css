@@ -1,0 +1,68 @@
+.body{
+    width:25%;
+    /* background-color: var(--glass); */
+}
+
+.appName{
+    margin: 30px 10px;
+    color: var(--white-2);
+}
+
+.chatsDisplay{
+    padding: 10px;
+
+}
+
+.chatsWrapper{
+}
+
+.chat, .chatSelected{
+    margin: 13px 0;
+    padding: 20px 10px;
+    display: flex;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.chatSelected{ 
+    border: 3px solid var(--border-color);
+}
+
+.chat{background-color: var(--glass);}
+.chat:hover{background-color: var(--background-color);}
+
+.textWrap{
+    flex: 1;
+    margin-left: 10px;
+}
+
+.chatName{
+    font-weight: var(--bold-weight);
+}
+
+.text{
+    color: var(--faint);
+    font-size: var(--small);
+    font-weight: var(--light-weight);
+    margin-top: 5px;
+}
+
+/* mob */
+.mobChat{
+    position: fixed;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+}
+
+.mobChatContent{
+    background-color: var(--background-color);
+    width: 80%;
+    height: 100%;
+}
+
+.mobChatEmpty{
+    flex: 1;
+    background-color: rgba(0, 0, 0, 0.692);
+}

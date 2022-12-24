@@ -1,0 +1,19 @@
+.loading{
+    position: fixed;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;   
+    background-color: rgba(0,0,0,0.5);
+}
+
+.wrap{
+    width: 100px;
+    height: 100px;
+    background-color: var(--black);
+    border-radius: 5px;
+    display: grid;
+    place-items: center;
+}

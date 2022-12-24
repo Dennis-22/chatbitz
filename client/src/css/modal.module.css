@@ -1,0 +1,60 @@
+.modal{
+    position: fixed;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;   
+    background-color: var(--popup-background);
+}
+
+.wrap{
+    width: 30%;
+    max-width: 400px;
+    background-color: var(--black);
+    border-radius: 5px;
+}
+
+.content{
+    padding: 20px;
+}
+
+.title{
+    text-align: center;
+    font-weight: var(--bold-weight);
+    font-size: var(--large);
+}
+
+.text{
+    color: var(--white-2);
+    margin: 1rem 0;
+}
+
+.btns{
+    display: flex;
+   
+}
+
+.btn{
+    display: block;
+    width: 50%;
+    padding: .8rem .4rem;
+    border: none;
+    outline: none;
+    background-color: var(--glass);
+    color: var(--white-2);
+    cursor: pointer;
+    transition: all 300ms ease-in-out;
+}
+
+.btn:hover{
+    background-color: var(--glass);
+    background-color: var(--faint);
+    color: var(--black);
+}
+
+
+@media screen and (max-width: 768px) {
+    .wrap{width: 90%;}
+}

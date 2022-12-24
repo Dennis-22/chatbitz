@@ -1,0 +1,56 @@
+.messages{
+    flex:1;
+    padding: 5px;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    background-image: linear-gradient(135deg, rgba(15, 15, 15, 0.911), rgba(15, 15, 15, 0.911)), url(../assets/bg.svg);
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.defMsg, .pMsg, .uMsg{
+    width: fit-content;
+    max-width: 50%;
+    margin: 10px;
+}
+
+.pMsg, .uMsg{
+    padding: 10px 15px;
+    background-color: var(--glass);
+    border-radius: 5px;
+}
+
+.defMsg{
+    align-self: center;
+}
+
+.pMsg{
+}
+
+.uMsg{
+    align-self: flex-end;
+}
+
+.username{
+    font-weight: var(--bold-weight);
+    font-size: var(--small);
+}
+
+.defMsgText{
+    color: var(--faint);
+}
+
+.msgText{
+    margin: 5px 0;
+}
+
+.msgTime{
+    color: var(--faint);
+    font-size: var(--tiny);
+}
+
+@media screen and (max-width: 768px) {
+    .defMsg, .pMsg, .uMsg{max-width: 85%;}
+}
