@@ -1,8 +1,8 @@
-import { useState } from 'react';
 import Switch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import styles from '../../css/form.module.css'
 import {useAppContext} from '../../utils/hooks'
+import {charsAllowed} from '../../utils/constance'
 
 function Form(props){
     const {error, setError, chatName, setChatName, type, secure, setSecure, password, setPassword} = props
@@ -12,6 +12,7 @@ function Form(props){
         if(error.status) setError({...error, status:false})
         setUser({...user, [property]: value})
     }
+
 
     const handleChange = (e, setState)=>{
         if(error.status) setError({...error, status:false})
@@ -26,8 +27,9 @@ function Form(props){
 
         <form className={styles.form}>
 
-            <Input state={user.username} handleChange={(e)=>handleUserChange(e.target.value, 'username')} label="Username" placeholder="Dennis Jeminal"/>
-            <Input state={chatName} handleChange={(e)=>handleChange(e, setChatName)} label="Chat's Name" placeholder="Gen-z's Court"/>
+            <Input state={user.username} handleChange={(e)=>handleUserChange(e.target.value, 'username')} label="Username" placeholder="Dennis Jeminal" maxLength={charsAllowed.username}/>
+            <Input state={chatName} handleChange={(e)=>handleChange(e, setChatName)} label="Chat's Name" placeholder="Gen-z's Court" maxLength={charsAllowed.chatName}/>
+            
 
             {type === 'Create' &&
                 <FormControlLabel
@@ -47,7 +49,7 @@ function Form(props){
 }
 
 
-function Input({state, handleChange, label, placeholder}){
+function Input({state, handleChange, label, placeholder, maxLength}){
     return <section className={styles.formInput}>
         <label className={styles.label}>{label}</label>
         <input 
@@ -56,6 +58,7 @@ function Input({state, handleChange, label, placeholder}){
             type="text"
             placeholder={placeholder}
             onChange={handleChange}
+            maxLength={maxLength}
         />
     </section>
 }

@@ -13,6 +13,10 @@
 
 }
 
+.text{
+    color: var(--faint);
+}
+
 .chatsWrapper{
 }
 

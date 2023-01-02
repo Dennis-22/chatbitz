@@ -1,6 +1,7 @@
 import {useState, createContext, useEffect} from 'react'
 import { idGenerator } from './utils/helpers'
 import { accentColors } from './utils/constance'
+import { setItemToSessionStorage, getItemFromStorage } from './utils/helpers'
 
 export const AppContext = createContext()
 
@@ -12,11 +13,22 @@ export default function AppProvider({children}){
 
     const [showMobileChats, setShowMobileChats] = useState(false) //chats display on mobile devices
     const [showMobileChatDetails, setShowMobileChatDetails] = useState(false) //chat display on mobile devices
+    const [showPopupInput, setShowPopupInput] = useState(false)
 
-    // assigning the user to his id
+    // assigning the user to his id and accent color
     const createUser = ()=>{
+        // check if user is stored in session storage
+        let userDetailsStored = getItemFromStorage('User');
+        if(userDetailsStored){
+            return setUser(userDetailsStored)
+        }
+        // create a new user
         let accentColor = accentColors[Math.floor(Math.random()*accentColors.length)]
-        setUser({username:'Chad', id:idGenerator(), profilePhoto:'', accentColor})
+        let id = idGenerator()
+        // let id = '21'
+        let userDetails = {username:'Chad', id, profilePhoto:'', accentColor}
+        setUser(userDetails)
+        setItemToSessionStorage('User', userDetails)
     }
 
 
@@ -36,7 +48,8 @@ export default function AppProvider({children}){
         user, setUser, 
         loading, setLoading,
         showMobileChats, setShowMobileChats,
-        showMobileChatDetails, setShowMobileChatDetails
+        showMobileChatDetails, setShowMobileChatDetails,
+        showPopupInput, setShowPopupInput
     }
 
     return <AppContext.Provider value={value}>

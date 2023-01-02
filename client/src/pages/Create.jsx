@@ -7,10 +7,12 @@ import Loading from "../components/global/Loading"
 import {useAppContext, useChatContext} from '../utils/hooks'
 import { requestMaker } from "../utils/helpers";
 import { api } from "../utils/constance";
+import { getItemFromStorage, setItemToSessionStorage } from "../utils/helpers";
+
 
 export default function Create() {
   const {user} = useAppContext()
-  const {socket, connectToServer, setPerformActionBeforeStartUp} = useChatContext()
+  const {socket, connectToServer, setChats, setPerformActionBeforeStartUp} = useChatContext()
   const [chatName, setChatName] = useState('')
   const [secure, setSecure] = useState(false)
   const [password, setPassword] = useState('')
@@ -30,6 +32,17 @@ export default function Create() {
         if(!socket)connectToServer() //don't connect to server when already connected
         // set to the data from the server and redirect to playground
         setPerformActionBeforeStartUp({action:'create', chatDetails:data.chatDetails})
+        // set the chat to user chats
+        setChats((prev) => ({loading:false, error:false, fetched:true, chatsData:[...prev.chatsData, data.chatDetails]}))
+
+        // add chat id to session storage
+        let oldDetails = getItemFromStorage('User')
+        let userChats = oldDetails.chats
+        let newDetails = {
+          // check if user has joined chats and add new chatId or set a new chatId
+          ...oldDetails, chats: userChats ? [...userChats, data.chatDetails.id] : [data.chatDetails.id]
+        }
+        setItemToSessionStorage('User', newDetails)
         return navigation('/playground')
       }
       // if chat already exist

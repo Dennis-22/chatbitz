@@ -1,0 +1,11 @@
+.error{
+    text-align: center;
+    display: grid;
+    place-content: center;
+    height:200px
+}
+
+.text{
+    color: var(--white-2);
+    font-weight: var(--light-weight);
+}

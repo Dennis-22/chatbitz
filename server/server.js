@@ -8,8 +8,9 @@ const {idGenerator, createNewChat, createNewMember, createConversation, createMe
 const {sendMessage, sendData, sendError} = require('./response')
 
 const {chatAlreadyExist, getChatName, getChatDetails, getChatById, isChatPasswordCorrect, addMemberToChat,
-  getMembersInAChat, getChatMemberById, removeMemberFromChat, deleteChat, deleteChatWithNotMembers,
-    addMessageToConversation, getAllMessagesOfAChat, postImage
+  getMembersInAChat, getUserChats, getChatMemberById, removeMemberFromChat, deleteChat, deleteChatWithNotMembers,
+    addMessageToConversation, getAllMessagesOfAChat, postImage,
+    createUserSocket, addUserToSockets, removeUserFromSocket, addChatToUserSocket, removeChatFromUserSocket
 } = require('./helpers')
 
 const {CONNECTION, DISCONNECT, CREATE_CHAT, JOIN_CHAT, SOMEONE_JOINED,
@@ -27,12 +28,18 @@ const PORT = process.env.port || 4000
 
 
 let chats = [
-//   {id:'1', coverPhoto:'', chatName:"Hell's kitchen 🔥🔥🔥", secured:{status:false, password: 'canopy'},
+//   {id:'1', coverPhoto:'', chatName:"Hell 🔥🔥🔥", secured:{status:false, password: 'canopy'},
 //       members:[
 //           {id:'1', username: 'Robert', admin:true, profilePhoto:'', accentColor:"rgb(38, 40, 170)"},
 //           {id:'21', username: 'Jessica', admin:false, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},
 //       ]
 //   },
+//   {id:'2', coverPhoto:'', chatName:"Kitchen", secured:{status:false, password: 'canopy'},
+//   members:[
+//         {id:'21', username: 'Jessica', admin:true, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},
+//       {id:'2', username: 'Lucy', admin:false, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},
+//   ]
+// },
 ]
 
 let conversations = [
@@ -48,12 +55,17 @@ let images = [
     // {id:'23', image:'string'}
 ]
 
+let sockets = [
+    // {id:'sck', userId:'', username:'', chats:["chatId","chatId"]}
+]
+
+
 // Setup socket io
 const io = new Server(server, {
     cors:{
-        // origin: "http://localhost:5173",
+        origin: "http://localhost:5173",
         // origin: "https://web-chatt.netlify.app",
-        origin:"https://jmtesting.netlify.app",
+        // origin:"https://jmtesting.netlify.app",
         methods:["GET", "POST"],
         credentials: true
     }
@@ -142,7 +154,30 @@ app.post('/api/join-chat', async(req, res)=>{
     }
 })
 
-//when the front gets a successfull response from this, socket from front someone left
+app.get('/api/get-user-chats/:userId', async(req,res)=>{
+    console.log('fetching user chats')
+    const {userId} = req.params
+    try {
+        let userChats = getUserChats(chats, userId)
+        sendData(res, 200, userChats)
+    } catch (error) {
+        sendError(res, error, 400, 'Failed to get user chats')
+    }
+})
+
+app.get('/api/get-chat-messages/:chatId', (req, res)=>{
+    console.log('fetching chat messages')
+
+    const {chatId} = req.params
+    try {
+        let messages = getAllMessagesOfAChat(conversations, chatId)
+        sendData(res, 200, messages)
+    } catch (error) {
+        sendError(res, error, 400, 'Failed to get chat messages')
+    }
+})
+
+//when the front gets a successful response from this, socket from front someone left
 app.patch('/api/leave-chat', (req,res)=>{
     let {chatId, id} = req.body //userId
 
@@ -161,11 +196,18 @@ io.on(CONNECTION, (socket)=>{
     console.log(socket.id, 'connected')
     socket.emit('connected', 'You connected with')
 
+    // get username and id from user
+
     // creating a chat
     socket.on(CREATE_CHAT, (chatDetails)=>{
-        // let creator = createNewMember(username, userId, false, null, accentColor) //create user
         socket.join(chatDetails.id)
-        console.log(chatDetails.chatName, 'created')
+
+        // get username, id and chat and add store in socket array
+        let user = chatDetails.members[0] //creator/admin will be the only user
+        let userSocket = createUserSocket(socket.id, user.id, user.username, [chatDetails.id])
+        sockets = addUserToSockets(sockets, userSocket)
+      
+        // console.log(chatDetails.chatName, 'created')
     })
 
     // joining a chat
@@ -173,6 +215,11 @@ io.on(CONNECTION, (socket)=>{
         const {id, userId, username, accentColor} = chatIdAndUserDetails
         socket.join(id)
         let newUser = {username, userId,  profilePhoto:null, accentColor, admin:false}
+        
+        // add user to socket
+        let userSocket = createUserSocket(socket.id, userId, username, [id])
+        sockets = addUserToSockets(sockets, userSocket)
+
         // emit a joined message and add to the chat messages
         let joinMsg = createMessage(id, 'join', username, `${username} joined`, accentColor)
         conversations = addMessageToConversation(conversations, joinMsg)
@@ -190,8 +237,19 @@ io.on(CONNECTION, (socket)=>{
         chats = removeMemberFromChat(chats, id, userId)
         let leaveMsg = createMessage(id, 'left', username, `${username} left`, null)
         conversations = addMessageToConversation(conversations, leaveMsg)
+        
+        // remove chats from user socket
+        sockets = removeChatFromUserSocket(sockets, userId, id)
         socket.leave(id)
-        socket.to(id).emit(SOMEONE_LEFT, {leaveMsg, id, userId})
+        // check if there is any member left in the chat and delete it
+        let membersInChat = getMembersInAChat(chats, id)
+        if(membersInChat.length > 0){
+            socket.to(id).emit(SOMEONE_LEFT, {leaveMsg, id, userId})
+        }else{
+            // delete the chat and socket
+            chats = deleteChat(chats, id)
+            // socket.delete(id) //delete the socket room
+        }
     })
 
     socket.on(SEND_MESSAGE, (msgDetails)=>{
@@ -203,11 +261,39 @@ io.on(CONNECTION, (socket)=>{
     })
 
     socket.on(TYPING, (chatIdAndUsername)=>{
-        const {id, username} = chatIdAndUsername
+        const {id} = chatIdAndUsername
         socket.to(id).emit(PERSON_IS_TYPING, chatIdAndUsername)
     })
 
     socket.on(DISCONNECT, ()=>{
+        // when a user leaves or disconnects without using the right channel
+        // by using the socket id, get the chat user was in and emit user left
+
+        let userSocket = sockets.find(socketId => socketId.id === socket.id)
+     
+        if(userSocket){
+            // check if user has his id in any of the chats.
+            if(userSocket.chats.length > 0){
+                            // get all chats user is in, check if there are any members and emit user left
+                for(let chatId of userSocket.chats){
+                    chats = removeMemberFromChat(chats, chatId, userSocket.userId) //remove user from chat
+
+                    let membersInChat = getMembersInAChat(chats, chatId)
+                    if(membersInChat.length > 0){ // there are other members in the chat. greater than 1 cos the user leaving counts as 1
+                        // let joinMsg = createMessage(id, 'join', username, `${username} joined`, accentColor)
+
+                        let leaveMsg = createMessage(chatId, 'left', userSocket.username, `${userSocket.username} left`, null)
+                        conversations = addMessageToConversation(conversations, leaveMsg)
+
+                        socket.to(chatId).emit(SOMEONE_LEFT, {leaveMsg, id:chatId, userId:userSocket.userId})
+                        socket.leave(chatId)
+                    }else{ //there are no other members
+                        chats = deleteChat(chats, chatId)
+                    }
+                }
+            }
+        }
+        
         console.log(socket.id, ' disconnected')
     })
 }) 

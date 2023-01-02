@@ -9,13 +9,14 @@ import { screenSizes } from '../../../utils/constance';
 
 export default function Header() {
   const {deviceWidth, setShowMobileChats, setShowMobileChatDetails} = useAppContext()
-  const {currentChat, setLeaveChat, peopleTyping} = useChatContext()
-  const {chatName, members} = currentChat
+  const {getCurrentChatDetails, setLeaveChat, peopleTyping} = useChatContext()
+
+  const {chatName, members, id} = getCurrentChatDetails()
 
   const handleLeaveChat = ()=>{
     // set the chat id and status of the modal to true
     // logic is handled in modal OK press
-    setLeaveChat({show:true, chatId:currentChat.id})
+    setLeaveChat({show:true, chatId:id})
   }
 
   const handleOpenMobileChats = ()=>{

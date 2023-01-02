@@ -4,7 +4,7 @@ import IconButton from '@mui/material/IconButton';
 import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded';
 import KeyboardArrowUpRoundedIcon from '@mui/icons-material/KeyboardArrowUpRounded';
 import styles from  '../css/home.module.css'
-
+import logo from '../assets/logo.svg'
 
 const documentation = [
     {
@@ -39,7 +39,6 @@ const documentation = [
         title:"Rules",
         text:[
             "No email or password required.",
-            "Each chat lasts for only 24hrs.",
             "Once the last person leaves the chat, the chat is automatically deleted",
             "All messages are deleted together the chat."
         ]
@@ -49,7 +48,7 @@ const documentation = [
 
 export default function Home(){
     const docsRef = useRef(null)
-    // const navigate = useNavigate()
+    const navigation = useNavigate()
     
     const scrollToView = ()=>{
         window.scrollTo(0, docsRef.current.offsetTop)
@@ -58,7 +57,10 @@ export default function Home(){
     return <div className={styles.home}>
          <header className={styles.header}>
             <nav className={styles.nav}>
-                <p className={styles.title}>ChatBit</p>
+                <div className={styles.logoWrap}>
+                    <img src={logo} className={styles.logo}/>
+                    <p className={styles.title}>ChatBit</p>
+                </div>
                 <p className={styles.navEl} onClick={scrollToView}>Docs</p>
             </nav>
         </header>
@@ -67,7 +69,7 @@ export default function Home(){
             <section className={styles.heroSec}>
                 <h1 className={styles.heroText}>Meet. Talk. Plan.</h1>
                 <p className={styles.heroSubText}>Connect with anyone, anywhere with zero effort and no limitation.</p>
-                <button className={styles.heroBtn} onClick={()=>navigate('create')}>Start Chatting</button>
+                <button className={styles.heroBtn} onClick={()=>navigation('/create')}>Start Chatting</button>
             </section>
         </div>
 

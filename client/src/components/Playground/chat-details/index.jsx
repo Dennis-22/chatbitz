@@ -22,8 +22,8 @@ export function MobileChatDetails(){
 
 function Content(){
   const {user} = useAppContext()
-  const {currentChat} = useChatContext()
-  const {chatName, members} = currentChat
+  const {getCurrentChatDetails} = useChatContext()
+  const {chatName, members} = getCurrentChatDetails()
 
   return <div className={styles.detailsWrap}>
     <div className={styles.chatDetails}>

@@ -55,5 +55,15 @@ async function requestMaker(method, url, data){
     }
 }
 
+function setItemToSessionStorage(key, data){
+    sessionStorage.setItem(key, JSON.stringify(data));
+    // sessionStorage.setItem(key, data);
+}
 
-export {requestMaker, idGenerator}
+function getItemFromStorage(key){
+    // let data = sessionStorage.getItem(key);
+    let data = sessionStorage.getItem(key)
+    return JSON.parse(data)
+}
+
+export {requestMaker, idGenerator, setItemToSessionStorage, getItemFromStorage}

@@ -6,27 +6,31 @@ import ChatDetails, {MobileChatDetails} from '../components/Playground/chat-deta
 import Loading from '../components/global/Loading'
 import Modal from '../components/global/Modal'
 import { useAppContext, useChatContext } from '../utils/hooks'
+import { getItemFromStorage } from '../utils/helpers'
 import {screenSizes, socketConstance} from '../utils/constance'
+import PopupInput from '../components/Playground/message/PopupInput'
+import { useNavigate } from "react-router-dom"
+
 
 const {CREATE_CHAT, JOIN_CHAT, SOMEONE_JOINED, SOMEONE_LEFT, RECEIVED_MESSAGE, PERSON_IS_TYPING} = socketConstance
 
 export default function Playground(){
-    const {deviceWidth, loading, user, showMobileChats, showMobileChatDetails} = useAppContext()
-    const {socket, leaveChat, currentChat, setCurrentChat, setMessages, setPeopleTyping,
+    const {deviceWidth, loading, user, showMobileChats, showMobileChatDetails, showPopupInput} = useAppContext()
+    const {socket, leaveChat, setCurrentChat, setChats, setMessages, setPeopleTyping,
         performActionBeforeStartUp, setPerformActionBeforeStartUp} = useChatContext()
     const [settingUp, setSettingUp] = useState(true)
+    const navigation = useNavigate()
 
-    const currentChatId = currentChat.id
 
     useEffect(() => {
         const handleTabClose = event => {
-          event.preventDefault();
+            event.preventDefault();
 
-          window.alert('Do u want to exist')
+            window.alert('Do u want to exist')
     
-          console.log('beforeunload event triggered');
+            // console.log('beforeunload event triggered');
     
-          return (event.returnValue = 'Are you sure you want to exit?');
+            return (event.returnValue = 'Are you sure you want to exit?');
         };
     
         window.addEventListener('beforeunload', handleTabClose);
@@ -42,7 +46,11 @@ export default function Playground(){
         if(action === 'create'){
             // emit chat creating with the chat details set at Create page.
             socket.emit(CREATE_CHAT, chatDetails)
-            setCurrentChat(chatDetails)
+            setCurrentChat(chatDetails.id)
+            
+            // reset startup state
+            setPerformActionBeforeStartUp({action:'', chatDetails:null})
+            setSettingUp(false)
         }
 
         // when user is joining a chat
@@ -56,22 +64,47 @@ export default function Playground(){
                 accentColor:user.accentColor
             }
             socket.emit(JOIN_CHAT, joiningParams)
-            setCurrentChat(chatDetails)
+            setCurrentChat(chatDetails.id)
+
+            // reset startup state
+            setPerformActionBeforeStartUp({action:'', chatDetails:null})
+            setSettingUp(false)
         }
 
-        // reset startup state
-        setPerformActionBeforeStartUp({action:'', chatDetails:null})
-        setSettingUp(false)
+        // when user navigates here without creating or joining a chat
+        if(action === '' && chatDetails === null){
+            navigation('/join')
+        }
+
+        // WHEN WORKING WITH REFRESH
+        // when action is empty but a user is stored in session storage, user refreshed this page
+        // if(action === '' && getItemFromStorage('User')){
+        //     console.log('user refreshed')
+        //     // check if user has chat id in session. 
+        //     // if not, user has not created or joined any chat, move user from this page 
+        //     // if user has chat ids, loop through each and socket connect to them
+        // }
     },[])
 
     useEffect(()=>{
 
         if(socket){
             socket?.on(SOMEONE_JOINED, (data) =>{
-                const {newUser, joinMsg} = data
-                // add newUser to current
-                setCurrentChat((prev)=>{
-                    return {...prev,members:[...prev.members, newUser]}
+                const {id, newUser, joinMsg} = data
+                // add newUser to his/her belonging chat
+                // make "userId" in newUser just "id" cos the rest of the functionality uses id not userId
+                let prepUser = {...newUser, id: newUser.userId}
+                delete prepUser.userId //remove cos its no more needed
+                setChats((prev) => {
+                    return {
+                        ...prev, 
+                        chatsData: prev.chatsData.map((chat) => {
+                            if(chat.id === id){
+                                return {...chat, members:[...chat.members, prepUser]}
+                            }
+                            return chat
+                        }) 
+                    }
                 })
                 // set messages
                 setMessages(prev => [...prev, joinMsg])
@@ -80,9 +113,18 @@ export default function Playground(){
             socket?.on(SOMEONE_LEFT, (data)=>{
                 const {leaveMsg, id, userId} = data
                 // remove user from the chat members
-                setCurrentChat((prev)=>{
-                    return {...prev, members:prev.members.filter(mem => mem.id !== userId)}
+                setChats((prev) => {
+                    return {
+                        ...prev,
+                        chatsData: prev.chatsData.map((chat) => {
+                            if(chat.id === id){
+                                return {...chat, members:chat.members.filter(mem => mem.id !== userId)}
+                            }
+                            return chat
+                        })
+                    }
                 })
+
                 setMessages(prev => [...prev, leaveMsg])
             })
 
@@ -118,6 +160,7 @@ export default function Playground(){
 
             {showMobileChats && <MobileChats />}
             {showMobileChatDetails && <MobileChatDetails />}
+            {showPopupInput && <PopupInput />}
         </>
     )
 }

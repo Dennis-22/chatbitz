@@ -5,7 +5,7 @@ function chatAlreadyExist(chats, chatName){
     return chatExist
 }
 
-//bring a particula information about a chat base on chat name(when user is joining)
+//bring a particular information about a chat base on chat name(when user is joining)
 function getChatDetails(chats, chatName){
     let roomDetails = chats.find(chat => chat.chatName === chatName)
     return roomDetails
@@ -30,6 +30,11 @@ function addMemberToChat(chats, chatId, newMember){
 
 function getMembersInAChat(chats, chatId){
     return getChatById(chats, chatId).members
+}
+
+function getUserChats(chats, userId){
+    let userChats = chats.filter(cht => cht.members.find(mem => mem.id === userId))
+    return userChats || []
 }
 
 // rooms = removeMemberFromRoom(rooms, 'old', 'Getty')
@@ -96,6 +101,38 @@ function getChatName(chats, chatId){
 //     return image
 // }
 
+function createUserSocket(socketId, userId, username, chats){
+    return {id:socketId, userId, username, chats}
+}
+
+function addUserToSockets(sockets, newUserSocket){
+    return [...sockets, newUserSocket]
+}
+
+function removeUserFromSocket(sockets, socketId){
+    return sockets.filter(sck => sck.id !== socketId)
+}
+
+function addChatToUserSocket(sockets, userId, chatId){
+    let newSockets = sockets.map((sck)=>{
+        if(sck.userId === userId){
+            return {...sck, chats:[...sck.chats, chatId]}
+        }
+        return sck
+    })
+    return newSockets
+}
+
+function removeChatFromUserSocket(sockets, userId, chatId){
+    let newSockets = sockets.map((sck)=>{
+        if(sck.userId === userId){
+            return {...sck, chats:sck.chats.filter(cht => cht !== chatId)}
+        }
+        return sck
+    })
+    return newSockets
+}
+
 module.exports = {
     chatAlreadyExist,
     getChatName,
@@ -104,6 +141,7 @@ module.exports = {
     isChatPasswordCorrect,
     addMemberToChat,
     getMembersInAChat,
+    getUserChats,
     getChatMemberById,
     removeMemberFromChat,
     deleteChat,
@@ -113,4 +151,10 @@ module.exports = {
     getAllMessagesOfAChat,
     postImage,
     // getImage,
+
+    createUserSocket,
+    addUserToSockets,
+    removeUserFromSocket,
+    addChatToUserSocket,
+    removeChatFromUserSocket
 }

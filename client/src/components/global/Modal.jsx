@@ -13,7 +13,7 @@ export default function Modal() {
   }
 
   const handleLeave = ()=>{
-    let leaveProps = {id:currentChat.id, userId:user.id, username:user.username}
+    let leaveProps = {id:currentChat, userId:user.id, username:user.username}
     socket?.emit(socketConstance.LEAVE_CHAT, leaveProps)
     setLeaveChat({show:false, chatId:null})
     navigation('/join')

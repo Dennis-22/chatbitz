@@ -5,11 +5,19 @@ const ENDPOINT = 'http://localhost:4000'
 
 const api = {
     createChat: `${ENDPOINT}/api/create-chat`,
-    joinChat: `${ENDPOINT}/api/join-chat`
+    joinChat: `${ENDPOINT}/api/join-chat`,
+    getUserChats: `${ENDPOINT}/api/get-user-chats`,
+    getChatMessages: `${ENDPOINT}/api/get-chat-messages`
 }
 
 // ids of messages neither user nor participants 
 const defMsgsIds = ['left', 'join']
+
+// character limit user can input for chat name and username
+const charsAllowed = {
+    chatName:15,
+    username:10
+}
 
 const accentColors = [
     "rgb(18, 112, 112)",
@@ -48,4 +56,4 @@ const socketConstance = {
 }
 
 
-export {screenSizes, accentColors, ENDPOINT, api, defMsgsIds, socketConstance}
+export {screenSizes, accentColors, ENDPOINT, api, defMsgsIds, socketConstance, charsAllowed}

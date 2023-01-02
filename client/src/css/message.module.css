@@ -109,10 +109,6 @@
     width: 400px;
 }
 
-.emoPick{
-    width: 100px;
-}
-
 /* for leave and show mobile chat details */
 @media screen and (max-width:1000px) {
     .details{width: 80%;}
@@ -120,6 +116,7 @@
 }
 
 @media screen and (max-width: 450px) {
+    .textInput{padding: 12px 15px;}
     .inputUtils{width: 23%;}
     .emojiPicker{width: 300px;}
 }

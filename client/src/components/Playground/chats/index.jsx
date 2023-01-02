@@ -1,26 +1,12 @@
+// import { useEffect } from 'react'
 import styles from '../../../css/chats.module.css'
+// import { api } from '../../../utils/constance'
+// import { requestMaker } from '../../../utils/helpers'
 import { useAppContext, useChatContext } from '../../../utils/hooks'
+import { InLoading } from '../../global/Loading'
+import Error from '../../global/Error'
 import ProfilePhoto from '../../global/ProfilePhoto'
 
-// export default function ChatDetails() {
-//   const {chats} = useChatContext()
-  
-//   return (
-//     <div className={styles.body}>
-//       <h1 className={styles.appName}>ChatBits</h1>
-
-//       <section className={styles.chatsDisplay}>
-//         <p>Current chats</p>
-
-//         <div className={styles.chatsWrapper}>
-//           {
-//             chats.map((chat, idx) => <Chat key={idx} {...chat} />)
-//           }
-//         </div>
-//       </section>  
-//     </div>
-//   )
-// }
 
 export default function Chats(){
   return <div className={styles.body}>
@@ -41,18 +27,50 @@ export function MobileChats(){
 }
 
 function Content(){
-  const {chats, currentChat} = useChatContext()
+  const {user} = useAppContext()
+  const {chats, setChats, currentChat, setCurrentChat} = useChatContext()
   const currentChatId = currentChat.id
+  const {loading, fetched, error, chatsData} = chats
+
+  // WORKING ON REFRESH *******
+  // const getUserChats = async()=>{
+  //   console.log('getting chats')
+  //   setChats({fetched:false, loading:true, error:false, chatsData:[]})
+  //   try {
+  //     let chats = await requestMaker('GET', `${api.getUserChats}/${user.id}`)
+  //     console.log('chats', chats)
+  //     setChats({fetched:true, loading:false, error:false, chatsData:chats.data || []})
+  //     // set current chat to the first chat element
+  //     setCurrentChat(chats.data[0].id)
+  //   } catch (error) {
+  //     console.log(error)
+  //     setChats({fetched:false, loading:false, error:true, chatsData:[]})
+  //   }
+  // }
+
+  // useEffect(()=>{
+  //   // fetch user chats if it has not been fetched (useful when user refreshes)
+  //   if(!fetched) getUserChats()
+  // },[])
+
+  // *******
+
   return <>
     <h1 className={styles.appName}>ChatBits</h1>
     <section className={styles.chatsDisplay}>
-      <p>Current chats</p>
+      <p className={styles.text}>Current chats</p>
 
-      <div className={styles.chatsWrapper}>
-        {
-          chats.map((chat, idx) => <Chat key={idx} {...chat} currentChatId={currentChatId}/>)
-        }
-      </div>
+      {
+        loading ? <InLoading /> : error ? 
+        <Error text="Failed to fetch chats" retryFn={getUserChats}/> :
+        <div className={styles.chatsWrapper}>
+          {
+            chatsData.map((chat, idx) => <Chat key={idx} {...chat} currentChatId={currentChatId}/>)
+          }
+        </div>
+      }
+
+ 
     </section>  
   </>
 }
