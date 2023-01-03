@@ -6,7 +6,6 @@ import ChatDetails, {MobileChatDetails} from '../components/Playground/chat-deta
 import Loading from '../components/global/Loading'
 import Modal from '../components/global/Modal'
 import { useAppContext, useChatContext } from '../utils/hooks'
-import { getItemFromStorage } from '../utils/helpers'
 import {screenSizes, socketConstance} from '../utils/constance'
 import PopupInput from '../components/Playground/message/PopupInput'
 import { useNavigate } from "react-router-dom"

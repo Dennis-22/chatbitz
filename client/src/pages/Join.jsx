@@ -60,7 +60,8 @@ export default function Join() {
       }
 
     return (
-        <div className={styles.body}>
+      <div className={styles.body}>
+        <div className={styles.wrapper}>
             <h1 className={styles.title}>Join a chat</h1>
             <Form 
                 chatName={chatName} 
@@ -80,5 +81,6 @@ export default function Join() {
             </div>
 
         </div>
+      </div>
     )
 }

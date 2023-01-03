@@ -56,8 +56,8 @@ export default function Create() {
   }
 
   return (
-    <>
-      <div className={styles.body}>
+    <div className={styles.body}>
+      <div className={styles.wrapper}>
         <h1 className={styles.title}>Create a chat</h1>
         <Form 
           chatName={chatName} 
@@ -81,6 +81,6 @@ export default function Create() {
       </div>
 
       {loading && <Loading />}
-    </>
+    </div>
   )
 }

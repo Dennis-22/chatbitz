@@ -72,12 +72,12 @@ export default function Input() {
 
           <div className={styles.inputUtils}>
               <IconButton title="emojis" onClick={()=>setShowEmojiPopup(!showEmojiPopup)}>
-                <EmojiEmotionsRoundedIcon sx={{color:"#eafc2b"}} className={styles.inputIcon} 
+                <EmojiEmotionsRoundedIcon sx={{color:"#c4d325"}} className={styles.inputIcon} 
                   fontSize={deviceWidth > screenSizes.small ? 'medium' : 'small'}
                 />
               </IconButton>
               <IconButton onClick={handleSendMessage} title="send message">
-                <SendRoundedIcon sx={{color:"#eee"}} className={styles.inputIcon} 
+                <SendRoundedIcon sx={{color:"#3a8be0"}} className={styles.inputIcon} 
                   fontSize={deviceWidth > screenSizes.small ? 'medium' : 'small'}
                 />
               </IconButton>

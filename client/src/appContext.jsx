@@ -8,7 +8,7 @@ export const AppContext = createContext()
 
 export default function AppProvider({children}){
     const [deviceWidth, setDeviceWidth] = useState(window.innerWidth)
-    const [user, setUser] = useState({id:'21', username:'Jessica', profilePhoto:null, accentColor:''})
+    const [user, setUser] = useState({id:'', username:'', profilePhoto:null, accentColor:''})
     const [loading, setLoading] = useState(false) //state for popup loading
 
     const [showMobileChats, setShowMobileChats] = useState(false) //chats display on mobile devices
@@ -26,7 +26,7 @@ export default function AppProvider({children}){
         let accentColor = accentColors[Math.floor(Math.random()*accentColors.length)]
         let id = idGenerator()
         // let id = '21'
-        let userDetails = {username:'Chad', id, profilePhoto:'', accentColor}
+        let userDetails = {username:'', id, profilePhoto:'', accentColor}
         setUser(userDetails)
         setItemToSessionStorage('User', userDetails)
     }

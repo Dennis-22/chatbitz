@@ -24,16 +24,6 @@ const _Chat = {
 //             {id:'6', username: 'Alexander', admin:false, profilePhoto:'', accentColor:"rgb(18, 112, 112)"},
 //             {id:'2', username: 'Bruce', admin:false, profilePhoto:'', accentColor:"rgb(148, 11, 125)"},
 //             {id:'4', username: 'David', admin:false, profilePhoto:'', accentColor:"red"},
-//             // {id:'3', username: 'Cynthia', admin:false, profilePhoto:'', accentColor:"rgb(29, 141, 76)"},
-//             // {id:'5', username: 'Gina', admin:false, profilePhoto:'', accentColor:"rgb(99, 32, 131)"},
-//             // {id:'6', username: 'Alexander', admin:false, profilePhoto:'', accentColor:"rgb(18, 112, 112)"},
-//             // {id:'2', username: 'Bruce', admin:false, profilePhoto:'', accentColor:"rgb(148, 11, 125)"},
-//             // {id:'4', username: 'David', admin:false, profilePhoto:'', accentColor:"red"},
-//             // {id:'3', username: 'Cynthia', admin:false, profilePhoto:'', accentColor:"rgb(29, 141, 76)"},
-//             // {id:'5', username: 'Gina', admin:false, profilePhoto:'', accentColor:"rgb(99, 32, 131)"},
-//             // {id:'6', username: 'Alexander', admin:false, profilePhoto:'', accentColor:"rgb(18, 112, 112)"},
-//             // {id:'2', username: 'Bruce', admin:false, profilePhoto:'', accentColor:"rgb(148, 11, 125)"},
-//             // {id:'4', username: 'David', admin:false, profilePhoto:'', accentColor:"red"},
 //         ]
 //     },
 //    {id:'2', coverPhoto:'', chatName:'The pentecost church', secured:{status: false, password: 'canopy'},
@@ -61,7 +51,7 @@ export default function ChatProvider({children}){
     const [chats, setChats] = useState({loading:false, error:false, fetched:false, chatsData:[]})
     const [socket, setSocket] = useState(null)
     const [performActionBeforeStartUp, setPerformActionBeforeStartUp] = useState({action:'', chatDetails:null}) //when playgrounds mounts, this will store details either creating or joining a chat 
-    const [currentChat, setCurrentChat] = useState('1')
+    const [currentChat, setCurrentChat] = useState()
     const [messages, setMessages] = useState([])
     const [sharedMessage, setSharedMessage] = useState('') //message to be shared btn input and popupInput 
     const [peopleTyping, setPeopleTyping] = useState([]) //people typing in a current chat

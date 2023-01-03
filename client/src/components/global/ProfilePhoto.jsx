@@ -1,5 +1,4 @@
 import styles from '../../css/profile-photo.module.css'
-import { screenSizes } from '../../utils/constance'
 import { useAppContext } from '../../utils/hooks'
 
 export default function ProfilePhoto({size, image, name, style, color}) {
@@ -13,7 +12,7 @@ export default function ProfilePhoto({size, image, name, style, color}) {
             image ? <img src={image} className={styles.photo}/> :
 
             <section className={styles.namePhoto} 
-                style={{width: size ? size : defSize, height: size ? size : defSize, backgroundColor:color || 'red'}}
+                style={{width: size ? size : defSize, height: size ? size : defSize, backgroundColor:color || '#3a8be0'}}
             >
                 <p className={styles.name}>{name.charAt(0)}</p>
             </section>

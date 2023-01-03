@@ -57,7 +57,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
 
-  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Noto Sans Display', sans-serif;
   color: var(--white);
   font-size: var(--normal);
   font-weight: var(--normal-weight);

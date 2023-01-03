@@ -2,15 +2,18 @@ import {useState, useEffect} from 'react'
 import Picker from 'emoji-picker-react';
 import IconButton from '@mui/material/IconButton';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
-import EmojiEmotionsRoundedIcon from '@mui/icons-material/EmojiEmotionsRounded';
+// import EmojiEmotionsRoundedIcon from '@mui/icons-material/EmojiEmotionsRounded';
 import SendRoundedIcon from '@mui/icons-material/SendRounded';
 import styles from '../../../css/popup-input.module.css'
+import {idGenerator} from '../../../utils/helpers'
 import { useAppContext, useChatContext } from '../../../utils/hooks';
+import { socketConstance } from '../../../utils/constance';
+
 
 export default function PopupInput(){
-  const {setShowPopupInput} = useAppContext()
+  const {user, setShowPopupInput} = useAppContext()
   const {socket, currentChat, setMessages, sharedMessage, setSharedMessage} = useChatContext()
-  const [showEmojis, setShowEmojis] = useState(false)
+  // const [showEmojis, setShowEmojis] = useState(false)
   const [message, setMessage] = useState('')
 
 
@@ -20,9 +23,9 @@ export default function PopupInput(){
     setShowPopupInput(false)
   }
   
-  const onEmojiClick = (emoji)=>{
-    setMessage(message + emoji.emoji)
-  }
+  // const onEmojiClick = (emoji)=>{
+  //   setMessage(message + emoji.emoji)
+  // }
 
   const handleSendMessage = ()=>{
     if(!message) return null
@@ -36,6 +39,7 @@ export default function PopupInput(){
     socket.emit(socketConstance.SEND_MESSAGE, msgData)
     setMessages(prev => [...prev, msgData])
     setMessage('')
+    setShowPopupInput(false)
   }
 
   useEffect(()=>{
@@ -61,18 +65,18 @@ export default function PopupInput(){
               onChange={(e)=>setMessage(e.target.value)}
             />
 
-            {showEmojis && <EmojiPicker onEmojiClick={onEmojiClick}/>}
+            {/* {showEmojis && <EmojiPicker onEmojiClick={onEmojiClick}/>} */}
 
           </div>
 
 
           <div className={styles.utils}>
-            <IconButton onClick={()=>setShowEmojis(!showEmojis)} title="emojis" style={{backgroundColor:"#1d1d1d"}}>
+            {/* <IconButton onClick={()=>setShowEmojis(!showEmojis)} title="emojis" style={{backgroundColor:"#1d1d1d"}}>
               <EmojiEmotionsRoundedIcon sx={{color:"#eafc2b"}}/>
-            </IconButton>
+            </IconButton> */}
 
             <IconButton onClick={handleSendMessage} title="send message" style={{backgroundColor:"#1d1d1d"}}>
-              <SendRoundedIcon sx={{color:"#eee"}}/>
+              <SendRoundedIcon sx={{color:"#3a8be0"}}/>
             </IconButton>
           </div>
         </div>

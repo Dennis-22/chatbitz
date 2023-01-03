@@ -90,7 +90,7 @@
 
 .inputUtils{
     width: 15%;
-    background-color: rgba(13, 78, 78, 0.938);
+    background-color: var(--background-color);
     display: flex;
     justify-content: space-around;
     align-items: center;
