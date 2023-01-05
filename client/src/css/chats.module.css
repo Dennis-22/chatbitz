@@ -6,6 +6,7 @@
 .appName{
     margin: 30px 10px;
     color: var(--white-2);
+    font-size: var(--x-large);
 }
 
 .chatsDisplay{

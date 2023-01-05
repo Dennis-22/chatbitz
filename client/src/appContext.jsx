@@ -25,7 +25,6 @@ export default function AppProvider({children}){
         // create a new user
         let accentColor = accentColors[Math.floor(Math.random()*accentColors.length)]
         let id = idGenerator()
-        // let id = '21'
         let userDetails = {username:'', id, profilePhoto:'', accentColor}
         setUser(userDetails)
         setItemToSessionStorage('User', userDetails)

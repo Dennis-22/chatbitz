@@ -18,7 +18,7 @@
 
 .pMsg, .uMsg{
     padding: 10px 15px;
-    background-color: var(--glass);
+    background-color: var(--background-color);
     border-radius: 5px;
 }
 

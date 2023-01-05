@@ -30,8 +30,7 @@ const PORT = process.env.port || 4000
 let chats = [
 //   {id:'1', coverPhoto:'', chatName:"Hell 🔥🔥🔥", secured:{status:false, password: 'canopy'},
 //       members:[
-//           {id:'1', username: 'Robert', admin:true, profilePhoto:'', accentColor:"rgb(38, 40, 170)"},
-//           {id:'21', username: 'Jessica', admin:false, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},
+//         {id:'621', username: 'Jessica', admin:true, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},
 //       ]
 //   },
 //   {id:'2', coverPhoto:'', chatName:"Kitchen", secured:{status:false, password: 'canopy'},
@@ -45,9 +44,12 @@ let chats = [
 let conversations = [
 //  {
 //     chatId:'1',
-//      messages:[
-//        {id:'101', userId:'21', username:'Jessica', message:'Hello everyone', time:'10:30', accentColor:"rgb(38, 40, 170)"},
-//      ],
+//     messages:[
+//         {id:'6101', userId:'21', username:'Jessica', message:'Hello everyone', time:'10:30', accentColor:"rgb(38, 40, 170)"},
+//         {id:'104', userId:'join', username:'Cynthia', message:'Cynthia Joined', time:'10:30'},
+//         {id:'101', userId:'101', username:'Cynthia', message:'Hello', time:'10:31', accentColor:"rgb(38, 40, 170)"},
+//         {id:'102', userId:'1', username:'Robert', message:'How are we all doing', time:"10:31", accentColor:"rgb(89, 141, 29)"},
+//     ],
 //  },
 ]
 
@@ -64,8 +66,7 @@ let sockets = [
 const io = new Server(server, {
     cors:{
         // origin: "http://localhost:5173",
-        // origin: "https://web-chatt.netlify.app",
-        origin:"https://jmtesting.netlify.app",
+        origin:"https://chatbitz.netlify.app",
         methods:["GET", "POST"],
         credentials: true
     }
@@ -73,7 +74,7 @@ const io = new Server(server, {
 
 
 app.get('/', (req, res) => {
-    res.send('ChatBitz Server 1');
+    res.send('ChatBitz Server 1.5');
 });
 
 //create new chat

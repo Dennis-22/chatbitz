@@ -20,6 +20,9 @@ export default function Join() {
     const navigation = useNavigate()
 
     const handleJoin = async()=>{
+        if(!user.username) return setError({status:true, text:'Provide your username'})
+        if(!chatName) return setError({status:true, text:'Provide the chat name'})
+
         setLoading(true)
         // params to be sent to server
         // chatName, username, id, secured, accentColor, profilePhoto

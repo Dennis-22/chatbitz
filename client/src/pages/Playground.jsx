@@ -20,6 +20,8 @@ export default function Playground(){
     const [settingUp, setSettingUp] = useState(true)
     const navigation = useNavigate()
 
+    console.log(user)
+
 
     useEffect(() => {
         const handleTabClose = event => {

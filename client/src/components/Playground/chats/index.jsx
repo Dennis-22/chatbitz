@@ -56,7 +56,7 @@ function Content(){
   // *******
 
   return <>
-    <h1 className={styles.appName}>ChatBits</h1>
+    <p className={styles.appName}>ChatBits</p>
     <section className={styles.chatsDisplay}>
       <p className={styles.text}>Current chats</p>
 

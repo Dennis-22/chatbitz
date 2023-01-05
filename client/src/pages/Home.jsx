@@ -13,14 +13,14 @@ const documentation = [
             "You Create a chat by first providing the name of the chat.",
             "If the name you provide for your chat has already been taken, you must provide a new name.",
             "You provide your username. Your username is what other participants you are in a chat with sees.",
-            "Chats are default public and anyone can join. To keep it private, secure the chat with a password. Only users with the password can join."
+            "Chats are by default public and anyone can join. To keep it private, secure the chat with a password. Only users with the password can join."
         ]
     },
     {
         title:"Join a chat",
         text:[
             "You Join a chat by first providing the name of the chat.",
-            "If there is no chat registered with that name, you would be propted.",
+            "If there is no chat registered with that name, you would be prompted.",
             "If the chat you want to join is secured, you will need to provide the password to join.",
             "You provide your username. Your username is what other participants you are in a chat with sees.",
             "Once you join a chat, you would be able to see all the conversations of the chat."
@@ -29,16 +29,16 @@ const documentation = [
     {
         title:"Messaging",
         text:[
-            "Messages are sent and received just like any other messaging services.",
-            "You can share photos and gifs to your chat.",
-            "You can see all the conversations you are currently in and all the members you are in with.",
-            "You can leave and rejoin a chat when neccessary."
+            "Messages are sent and received just like any other messaging service.",
+            "Any member of a chat can send a message and it will be delivered to all the other members"
         ]
     },
     {
         title:"Rules",
         text:[
-            "No email or password required.",
+            "No email, telephone or password required.",
+            "You can leave and rejoin a chat when necessary.",
+            "Once you refresh your browser, you automatically leave your current chat",
             "Once the last person leaves the chat, the chat is automatically deleted",
             "All messages are deleted together the chat."
         ]
