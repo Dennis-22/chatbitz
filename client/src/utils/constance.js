@@ -1,7 +1,7 @@
 const screenSizes = {large: 1000, small: 770}
 
-// const ENDPOINT = 'http://localhost:4000'
-const ENDPOINT = 'https://chatbitz-server.onrender.com'
+const ENDPOINT = 'http://localhost:4000'
+// const ENDPOINT = 'https://chatbitz-server.onrender.com'
 
 const api = {
     createChat: `${ENDPOINT}/api/create-chat`,

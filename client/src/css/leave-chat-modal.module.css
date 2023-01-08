@@ -1,0 +1,25 @@
+.container{
+    width: 30%;
+    max-width: 400px;
+    background-color: var(--black);
+    border-radius: 5px;
+}
+
+.content{
+    padding: 20px;
+}
+
+.title{
+    text-align: center;
+    font-weight: var(--bold-weight);
+    font-size: var(--large);
+}
+
+.text{
+    color: var(--white-2);
+    margin: 1rem 0;
+}
+
+@media screen and (max-width: 768px) {
+    .container{width: 90%;}
+}

@@ -65,8 +65,8 @@ let sockets = [
 // Setup socket io
 const io = new Server(server, {
     cors:{
-        // origin: "http://localhost:5173",
-        origin:"https://chatbitz.netlify.app",
+        origin: "http://localhost:5173",
+        // origin:"https://chatbitz.netlify.app",
         methods:["GET", "POST"],
         credentials: true
     }

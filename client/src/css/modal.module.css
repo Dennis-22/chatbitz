@@ -9,34 +9,14 @@
     background-color: var(--popup-background);
 }
 
-.wrap{
-    width: 30%;
-    max-width: 400px;
-    background-color: var(--black);
-    border-radius: 5px;
-}
 
-.content{
-    padding: 20px;
-}
-
-.title{
-    text-align: center;
-    font-weight: var(--bold-weight);
-    font-size: var(--large);
-}
-
-.text{
-    color: var(--white-2);
-    margin: 1rem 0;
-}
-
+/* Buttons */
 .btns{
     display: flex;
-   
 }
 
 .btn{
+    flex: 1;
     display: block;
     width: 50%;
     padding: .8rem .4rem;
@@ -52,9 +32,4 @@
     background-color: var(--glass);
     background-color: var(--faint);
     color: var(--black);
-}
-
-
-@media screen and (max-width: 768px) {
-    .wrap{width: 90%;}
 }

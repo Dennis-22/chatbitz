@@ -4,7 +4,7 @@ import Chats, {MobileChats} from '../components/Playground/chats'
 import Message from '../components/Playground/message'
 import ChatDetails, {MobileChatDetails} from '../components/Playground/chat-details'
 import Loading from '../components/global/Loading'
-import Modal from '../components/global/Modal'
+import LeaveChatModal from '../components/global/LeaveChatModal'
 import { useAppContext, useChatContext } from '../utils/hooks'
 import {screenSizes, socketConstance} from '../utils/constance'
 import PopupInput from '../components/Playground/message/PopupInput'
@@ -19,8 +19,6 @@ export default function Playground(){
         performActionBeforeStartUp, setPerformActionBeforeStartUp} = useChatContext()
     const [settingUp, setSettingUp] = useState(true)
     const navigation = useNavigate()
-
-    console.log(user)
 
 
     useEffect(() => {
@@ -157,7 +155,7 @@ export default function Playground(){
                 {deviceWidth >= screenSizes.large && <ChatDetails />}  
             </div>
             {loading && <Loading />}
-            {leaveChat.show && <Modal />}
+            {leaveChat.show && <LeaveChatModal />}
 
             {showMobileChats && <MobileChats />}
             {showMobileChatDetails && <MobileChatDetails />}
