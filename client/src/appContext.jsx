@@ -20,24 +20,24 @@ export default function AppProvider({children}){
     const [showNotAdminModal, setShowNotAdminModal] = useState(false) //not an admin popup when user tries to remove a member
 
     // assigning the user to his id and accent color
-    const createUser = ()=>{
-        // check if user is stored in session storage
-        let userDetailsStored = getItemFromStorage('User');
-        if(userDetailsStored){
-            return setUser(userDetailsStored)
-        }
-        // create a new user
-        let accentColor = accentColors[Math.floor(Math.random()*accentColors.length)]
-        let id = idGenerator()
-        let userDetails = {username:'', id, profilePhoto:'', accentColor}
-        setUser(userDetails)
-        setItemToSessionStorage('User', userDetails)
-    }
+    // const createUser = ()=>{
+    //     // check if user is stored in session storage
+    //     let userDetailsStored = getItemFromStorage('User');
+    //     if(userDetailsStored){
+    //         return setUser(userDetailsStored)
+    //     }
+    //     // create a new user
+    //     let accentColor = accentColors[Math.floor(Math.random()*accentColors.length)]
+    //     let id = idGenerator()
+    //     let userDetails = {username:'', id, profilePhoto:'', accentColor}
+    //     setUser(userDetails)
+    //     setItemToSessionStorage('User', userDetails)
+    // }
 
 
-    useEffect(()=>{
-        createUser()
-    },[])
+    // useEffect(()=>{
+    //     createUser()
+    // },[])
 
     useEffect(()=>{
         window.addEventListener('resize', ()=>{

@@ -4,11 +4,15 @@ import App from './App'
 import './css/index.css'
 import AppProvider from './appContext'
 import ChatProvider from './chatContext'
+import UserProvider from './context/user/UserContext'
+
 
 ReactDOM.createRoot(document.getElementById('root')).render(
     <AppProvider>
       <ChatProvider>
-        <App />
+        <UserProvider>
+          <App />
+        </UserProvider>
       </ChatProvider>
     </AppProvider>
 )

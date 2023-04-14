@@ -12,9 +12,9 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Home />}/>
         <Route path="/connect" element={<Connect />}/>
+        <Route path="/playground" element={<Playground />}/>
         <Route path="/join" element={<Join />}/>
         <Route path="/create" element={<Create />}/>
-        <Route path="/playground" element={<Playground />}/>
       </Routes>
     </Router>
   )
