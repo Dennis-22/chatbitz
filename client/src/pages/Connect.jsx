@@ -1,6 +1,6 @@
 import { useState, useLayoutEffect } from "react"
 import styles from '../css/connect.module.css'
-import { useUserContext } from "../utils/hooks";
+import { useUserContext, useChatContext } from "../utils/hooks";
 import Form from "../components/connect/Form"
 import Button from '@mui/material/Button';
 import { _Connect } from "../utils/types"
@@ -21,10 +21,11 @@ const joinChatInputs = {
 
 export default function Connect(){
     const {userState} = useUserContext()
+    const {chatState, chatDispatch} = useChatContext()
     const [connect, setConnect] = useState(create)
     const [connectDetails, setConnectDetails] = useState(null)
     const [process, setProcess] = useState({loading:false, error:""})
-
+    
     const handleConnect = (connectType)=>{
         if(connectType === create){
 

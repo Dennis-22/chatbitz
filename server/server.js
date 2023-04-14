@@ -215,7 +215,6 @@ io.on(CONNECTION, (socket)=>{
     socket.on(JOIN_CHAT, (chatIdAndUserDetails)=>{
         const {id, userId, username, accentColor} = chatIdAndUserDetails
         socket.join(id)
-        let newUser = {username, userId,  profilePhoto:null, accentColor, admin:false}
         
         // add user to socket
         let userSocket = createUserSocket(socket.id, userId, username, [id])
@@ -225,6 +224,8 @@ io.on(CONNECTION, (socket)=>{
         let joinMsg = createMessage(id, 'join', username, `${username} joined`, accentColor)
         conversations = addMessageToConversation(conversations, joinMsg)
         // emit to other users someone joined with new user data
+
+        let newUser = {username, id:userId,  profilePhoto:null, accentColor, admin:false}
         socket.to(id).emit(SOMEONE_JOINED, {joinMsg, id, newUser})
         // console.log('joining', chatIdAndUserDetails)
         console.log(`${username} joined ${id}`)

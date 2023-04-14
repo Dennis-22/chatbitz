@@ -1,5 +1,5 @@
 import { userActions } from "../../utils/actions"
-const {SET_USER, EDIT_USER, ADD_CHAT, LEAVE_CHAT} = userActions
+const {SET_USER, EDIT_USER, ADD_CHAT, REMOVE_CHAT} = userActions
 
 const state = {
     user:{username:"", id:"", profilePhoto:"", accentColor:""},
@@ -18,7 +18,7 @@ function userReducer(state, action){
         case(ADD_CHAT):{
             return {...state, chats:[...state.chats, payload]}
         }
-        case(LEAVE_CHAT):{
+        case(REMOVE_CHAT):{
             return {...state, chats:state.chats.filter(chat => ! payload)}
         }
     }
