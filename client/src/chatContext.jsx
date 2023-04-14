@@ -1,7 +1,7 @@
 import {useState, createContext} from 'react'
 import {io} from 'socket.io-client'
 import { ENDPOINT } from './utils/constance'
-
+import { _PerformActionBeforeStart} from './utils/types'
 
 export const ChatContext = createContext()
 
@@ -50,15 +50,15 @@ const _Chat = {
 export default function ChatProvider({children}){
     const [chats, setChats] = useState({loading:false, error:false, fetched:false, chatsData:[]})
     const [socket, setSocket] = useState(null)
-    const [performActionBeforeStartUp, setPerformActionBeforeStartUp] = useState({action:'', chatDetails:null}) //when playgrounds mounts, this will store details either creating or joining a chat 
-    const [currentChat, setCurrentChat] = useState()
+    const [performActionBeforeStartUp, setPerformActionBeforeStartUp] = useState(_PerformActionBeforeStart) //when playgrounds mounts, this will store details either creating or joining a chat 
+    const [currentChat, setCurrentChat] = useState() //id of the current chat
     const [messages, setMessages] = useState([])
     const [sharedMessage, setSharedMessage] = useState('') //message to be shared btn input and popupInput 
     const [peopleTyping, setPeopleTyping] = useState([]) //people typing in a current chat
     const [leaveChat, setLeaveChat] = useState({show:false, chatId:null}) //current chat id and modal to leave a chat
 
     const connectToServer = ()=>{
-        let connected = io.connect(ENDPOINT, {car:'car'})
+        let connected = io.connect(ENDPOINT)
         setSocket(connected)
     }
 

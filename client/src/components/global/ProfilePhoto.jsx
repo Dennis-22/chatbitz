@@ -1,7 +1,7 @@
 import styles from '../../css/profile-photo.module.css'
 import { useAppContext } from '../../utils/hooks'
 
-export default function ProfilePhoto({size, image, name, style, color}) {
+export default function ProfilePhoto({size, image, name, color}) {
     const {deviceWidth} = useAppContext()
     const defSize = deviceWidth > 600 ? 40 : 30 //also set in css using media query
     

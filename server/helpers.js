@@ -60,12 +60,28 @@ function getChatMemberById(chats, chatId, memberId){
     return user
 }
 
+// check if a user(id) in a chat is an admin 
+function isMemberAdmin(chats, chatId, memberId){
+    let isAdmin = getChatMemberById(chats, chatId, memberId).admin
+    return isAdmin
+}
+
+// this returns the name of a member by his id
+function getUserNameById(chats, chatId, userId){
+    let chat = chats.find(chat => chat.id === chatId)
+    return chat.members.find(mem => mem.id === userId).username
+}
+
 function deleteChatWithNotMembers(chats){
     return chats.filter(chat => chat.members.length !== 0)
 }
 
 function deleteChat(chats, chatId){
     return chats.filter(chat => chat.id !== chatId)
+}
+
+function deleteConversation(conversations, conversationId){
+    return conversations.filter(con => con.chatId !== conversationId)
 }
 
 
@@ -143,9 +159,12 @@ module.exports = {
     getMembersInAChat,
     getUserChats,
     getChatMemberById,
+    isMemberAdmin,
+    getUserNameById,
     removeMemberFromChat,
     deleteChat,
     deleteChatWithNotMembers,
+    deleteConversation,
 
     addMessageToConversation,
     getAllMessagesOfAChat,

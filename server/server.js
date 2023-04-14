@@ -8,13 +8,13 @@ const {idGenerator, createNewChat, createNewMember, createConversation, createMe
 const {sendMessage, sendData, sendError} = require('./response')
 
 const {chatAlreadyExist, getChatName, getChatDetails, getChatById, isChatPasswordCorrect, addMemberToChat,
-  getMembersInAChat, getUserChats, getChatMemberById, removeMemberFromChat, deleteChat, deleteChatWithNotMembers,
+  getMembersInAChat, getUserChats, getChatMemberById, isMemberAdmin, getUserNameById, removeMemberFromChat, deleteChat, deleteChatWithNotMembers, deleteConversation,
     addMessageToConversation, getAllMessagesOfAChat, postImage,
     createUserSocket, addUserToSockets, removeUserFromSocket, addChatToUserSocket, removeChatFromUserSocket
 } = require('./helpers')
 
 const {CONNECTION, DISCONNECT, CREATE_CHAT, JOIN_CHAT, SOMEONE_JOINED,
-    LEAVE_CHAT, SOMEONE_LEFT,
+    LEAVE_CHAT, SOMEONE_LEFT, REMOVE_USER, SOMEONE_WAS_REMOVED, REMOVE_USER_FAILED,
     SEND_MESSAGE, RECEIVED_MESSAGE, TYPING, PERSON_IS_TYPING
 } = require('./constance')
 
@@ -28,11 +28,12 @@ const PORT = process.env.port || 4000
 
 
 let chats = [
-//   {id:'1', coverPhoto:'', chatName:"Hell 🔥🔥🔥", secured:{status:false, password: 'canopy'},
-//       members:[
-//         {id:'621', username: 'Jessica', admin:true, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},
-//       ]
-//   },
+  {id:'1', coverPhoto:'', chatName:"Hell 🔥🔥🔥", secured:{status:false, password: 'canopy'},
+      members:[
+        {id:'621', username: 'Jessica', admin:true, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},
+        {id:'2', username: 'Lucy', admin:false, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},     
+    ]
+  },
 //   {id:'2', coverPhoto:'', chatName:"Kitchen", secured:{status:false, password: 'canopy'},
 //   members:[
 //         {id:'21', username: 'Jessica', admin:true, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},
@@ -60,7 +61,6 @@ let images = [
 let sockets = [
     // {id:'sck', userId:'', username:'', chats:["chatId","chatId"]}
 ]
-
 
 // Setup socket io
 const io = new Server(server, {
@@ -233,23 +233,53 @@ io.on(CONNECTION, (socket)=>{
     socket.on(LEAVE_CHAT, (chatIdAndUserDetails)=>{
         const {id, username, userId} = chatIdAndUserDetails
         // remove user from chat
-        // disconnect via socket
+        // remove from sockets
         // send message and emit to other members
+
         chats = removeMemberFromChat(chats, id, userId)
-        let leaveMsg = createMessage(id, 'left', username, `${username} left`, null)
-        conversations = addMessageToConversation(conversations, leaveMsg)
         
         // remove chats from user socket
         sockets = removeChatFromUserSocket(sockets, userId, id)
-        socket.leave(id)
+        socket.leave(id) //user sockets disconnects from the chat
+
         // check if there is any member left in the chat and delete it
         let membersInChat = getMembersInAChat(chats, id)
-        if(membersInChat.length > 0){
+        if(membersInChat.length > 0){ //if there are members in the chat
+            // send a someone left message
+            let leaveMsg = createMessage(id, 'left', username, `${username} left`, null)
+            conversations = addMessageToConversation(conversations, leaveMsg)
             socket.to(id).emit(SOMEONE_LEFT, {leaveMsg, id, userId})
         }else{
-            // delete the chat and socket
+            // delete the chat, conversation and socket
             chats = deleteChat(chats, id)
+            conversations = deleteConversation(conversations, id)
             // socket.delete(id) //delete the socket room
+        }
+    })
+
+    socket.on(REMOVE_USER, (props)=>{
+        // check if admin is truly an admin cos the client cant be trusted 
+        // remove user from chat
+        // remove from sockets
+        // send message to other users
+        const {chatId, adminName, adminId, userId} = props
+        let isAdmin = isMemberAdmin(chats, chatId, adminId)
+        
+        if(!isAdmin) socket.emit(REMOVE_USER_FAILED, {msg: 'You are not an admin', notAdminId:adminId})
+        else{
+            let userRemovedName = getUserNameById(chats, chatId, userId) // get the name of the user being removed
+            chats = removeMemberFromChat(chats, chatId, userId)
+
+            // remove chat from userSocket
+            sockets = removeChatFromUserSocket(sockets, userId, chatId)
+
+            // socket.leave(chatId)
+            // create a message for other members in the chat  
+            let userRemovedMsg = createMessage(chatId, 'user-removed', userRemovedName, `${adminName} removed ${userRemovedName}`, null)
+            conversations = addMessageToConversation(conversations, userRemovedMsg)
+            
+            // send to every one in the chat including the admin
+            io.to(chatId).emit(SOMEONE_WAS_REMOVED, {userId, chatId, message:userRemovedMsg})
         }
     })
 
@@ -275,13 +305,14 @@ io.on(CONNECTION, (socket)=>{
         if(userSocket){
             // check if user has his id in any of the chats.
             if(userSocket.chats.length > 0){
-                            // get all chats user is in, check if there are any members and emit user left
+                // get all chats user is in, check if there are any members and emit user left
                 for(let chatId of userSocket.chats){
                     chats = removeMemberFromChat(chats, chatId, userSocket.userId) //remove user from chat
 
                     let membersInChat = getMembersInAChat(chats, chatId)
+
+                    //if there are other members, send message a "member has left" msg to them
                     if(membersInChat.length > 0){ // there are other members in the chat. greater than 1 cos the user leaving counts as 1
-                        // let joinMsg = createMessage(id, 'join', username, `${username} joined`, accentColor)
 
                         let leaveMsg = createMessage(chatId, 'left', userSocket.username, `${userSocket.username} left`, null)
                         conversations = addMessageToConversation(conversations, leaveMsg)
@@ -289,7 +320,9 @@ io.on(CONNECTION, (socket)=>{
                         socket.to(chatId).emit(SOMEONE_LEFT, {leaveMsg, id:chatId, userId:userSocket.userId})
                         socket.leave(chatId)
                     }else{ //there are no other members
+                        // delete chat and conversations
                         chats = deleteChat(chats, chatId)
+                        conversations = deleteConversation(conversations, chatId)
                     }
                 }
             }

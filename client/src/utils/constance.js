@@ -11,7 +11,7 @@ const api = {
 }
 
 // ids of messages neither user nor participants 
-const defMsgsIds = ['left', 'join']
+const defMsgsIds = ['left', 'join', 'user-removed']
 
 // character limit user can input for chat name and username
 const charsAllowed = {
@@ -46,7 +46,9 @@ const socketConstance = {
     SOMEONE_LEFT:   'someone left',
 
     REMOVE_USER:'remove-user',
+    REMOVE_USER_FAILED:'remove-user-failed',
     SOMEONE_WAS_REMOVED:'someone-were-removed',
+    I_WAS_REMOVED:'i-was-removed',
 
     SEND_MESSAGE:'send message',
     RECEIVED_MESSAGE: 'received message',

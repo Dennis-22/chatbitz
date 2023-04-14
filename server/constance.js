@@ -10,7 +10,9 @@ const socketConstance = {
     SOMEONE_LEFT:   'someone left',
 
     REMOVE_USER:'remove-user',
+    REMOVE_USER_FAILED:'remove-user-failed',
     SOMEONE_WAS_REMOVED:'someone-were-removed',
+    I_WAS_REMOVED:'i-was-removed',
 
     SEND_MESSAGE:'send message',
     RECEIVED_MESSAGE: 'received message',

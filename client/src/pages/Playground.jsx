@@ -1,23 +1,33 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from "react-router-dom"
 import styles from '../css/playground.module.css'
 import Chats, {MobileChats} from '../components/Playground/chats'
 import Message from '../components/Playground/message'
 import ChatDetails, {MobileChatDetails} from '../components/Playground/chat-details'
 import Loading from '../components/global/Loading'
 import LeaveChatModal from '../components/global/LeaveChatModal'
+import PopupInput from '../components/Playground/message/PopupInput'
+import MemberDetailsModal from '../components/Playground/chat-details/MemberDetailsModal'
+import RemovedModal from '../components/global/RemovedModal'
+import NotAnAdminModal from '../components/global/NotAnAdminModal'
 import { useAppContext, useChatContext } from '../utils/hooks'
 import {screenSizes, socketConstance} from '../utils/constance'
-import PopupInput from '../components/Playground/message/PopupInput'
-import { useNavigate } from "react-router-dom"
+import { _PerformActionBeforeStart } from '../utils/types'
 
-
-const {CREATE_CHAT, JOIN_CHAT, SOMEONE_JOINED, SOMEONE_LEFT, RECEIVED_MESSAGE, PERSON_IS_TYPING} = socketConstance
+const {CREATE_CHAT, JOIN_CHAT, SOMEONE_JOINED, SOMEONE_LEFT, RECEIVED_MESSAGE, PERSON_IS_TYPING,
+    SOMEONE_WAS_REMOVED, REMOVE_USER_FAILED,
+} = socketConstance
 
 export default function Playground(){
-    const {deviceWidth, loading, user, showMobileChats, showMobileChatDetails, showPopupInput} = useAppContext()
-    const {socket, leaveChat, setCurrentChat, setChats, setMessages, setPeopleTyping,
+    const {deviceWidth, loading, user, showMobileChats, showMobileChatDetails, showChatMemberDetails, 
+        showPopupInput, showRemovedModal, setShowRemovedModal, 
+        showNotAdminModal, setShowNotAdminModal} = useAppContext()
+    
+    const {socket, leaveChat, setCurrentChat, chats, setChats, setMessages, setPeopleTyping,
         performActionBeforeStartUp, setPerformActionBeforeStartUp} = useChatContext()
+
     const [settingUp, setSettingUp] = useState(true)
+
     const navigation = useNavigate()
 
 
@@ -48,7 +58,7 @@ export default function Playground(){
             setCurrentChat(chatDetails.id)
             
             // reset startup state
-            setPerformActionBeforeStartUp({action:'', chatDetails:null})
+            setPerformActionBeforeStartUp(_PerformActionBeforeStart)
             setSettingUp(false)
         }
 
@@ -66,7 +76,7 @@ export default function Playground(){
             setCurrentChat(chatDetails.id)
 
             // reset startup state
-            setPerformActionBeforeStartUp({action:'', chatDetails:null})
+            setPerformActionBeforeStartUp(_PerformActionBeforeStart)
             setSettingUp(false)
         }
 
@@ -84,6 +94,8 @@ export default function Playground(){
         //     // if user has chat ids, loop through each and socket connect to them
         // }
     },[])
+
+    // console.log('chats', chats.chatsData)
 
     useEffect(()=>{
 
@@ -140,6 +152,37 @@ export default function Playground(){
                     return [...prev, username]
                 })
             })
+
+            socket?.on(SOMEONE_WAS_REMOVED, (data)=>{
+                let {userId, chatId, adminName, message} = data
+                // check if user was removed and show the popup
+                // for other participants, remove the removed user from their chat members
+                if(userId === user.id){ //if the current user is removed
+                    setShowRemovedModal(() => {
+                        return {show:true, adminName:adminName}
+                    })
+                }else{ //other member was removed
+                    // remove member from the chat 
+                    setChats((prev)=>{
+                        return {...prev, chatsData:prev.chatsData.map((chat) =>{
+                            if(chat.id === chatId){
+                                return {...chat, members: chat.members.filter(mem => mem.id !== userId)}
+                            }
+                            return chat
+                        })}
+                    })
+                    
+                    //add the remove message
+                    setMessages(prev => [...prev, message])
+                }
+
+            })
+
+            // when an user who is not admin tries to remove a member
+            // the server checks if an admin is an actual admin before they can remove a member
+            socket.on(REMOVE_USER_FAILED, ()=>{
+                setShowNotAdminModal(true)
+            })
         }
 
     },[socket])
@@ -154,12 +197,18 @@ export default function Playground(){
                 <Message />
                 {deviceWidth >= screenSizes.large && <ChatDetails />}  
             </div>
+            
             {loading && <Loading />}
             {leaveChat.show && <LeaveChatModal />}
 
+            {showPopupInput && <PopupInput />}
+            {showChatMemberDetails.show && <MemberDetailsModal />}
+            {showRemovedModal.show && <RemovedModal />}
+            {showNotAdminModal && <NotAnAdminModal />}
+
+            {/* other device sizes */}
             {showMobileChats && <MobileChats />}
             {showMobileChatDetails && <MobileChatDetails />}
-            {showPopupInput && <PopupInput />}
         </>
     )
 }

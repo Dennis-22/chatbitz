@@ -21,9 +21,20 @@ export function MobileChatDetails(){
 }
 
 function Content(){
-  const {user} = useAppContext()
+  const {user, setShowChatMemberDetails} = useAppContext()
   const {getCurrentChatDetails} = useChatContext()
   const {chatName, members} = getCurrentChatDetails()
+
+  // set the member details and set modal to true
+  const onMemberClick = (memDetails)=>{
+    let {id, username, profilePhoto, accentColor} = memDetails
+    setShowChatMemberDetails(
+      {
+        show:true, 
+        memberDetails:{id, username, profilePhoto, accentColor}
+      }
+    )
+  }
 
   return <div className={styles.detailsWrap}>
     <div className={styles.chatDetails}>
@@ -38,7 +49,12 @@ function Content(){
         {
           members.map((mem, idx) => {
             const {id, username, accentColor, profilePhoto, admin} = mem
-            return <div key={idx} className={styles.member} title={`${username} is a chat member`}>
+            return <div 
+              key={idx} 
+              className={styles.member} 
+              title={`${username} is a chat member`}
+              onClick={()=>onMemberClick(mem)}
+            >
                 <ProfilePhoto size={30} image={profilePhoto} name={username} color={accentColor}/>
                 <p className={styles.memberName}>{username}</p>
                 {user.id === id && <p className={styles.you}>👑</p>}
