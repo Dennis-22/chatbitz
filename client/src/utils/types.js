@@ -1,10 +1,14 @@
 // How stuff should look like at their default state
 // items here are supposed to look like this in their default state. they would carry values when running the app.
 
+const _Connect = {
+    create:'create',
+    join:'join'
+}
+
 const _PerformActionBeforeStart = {
     action:'', chatDetails:null
 }
-
 
 // object for the modal which pops up when a member is clicked on the chat details 
 const _ChatMemberDetails = {
@@ -18,6 +22,7 @@ const _ChatMemberDetails = {
 }
 
 export {
+    _Connect,
     _PerformActionBeforeStart,
     _ChatMemberDetails
 }
