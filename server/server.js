@@ -43,15 +43,15 @@ let chats = [
 ]
 
 let conversations = [
-//  {
-//     chatId:'1',
-//     messages:[
-//         {id:'6101', userId:'21', username:'Jessica', message:'Hello everyone', time:'10:30', accentColor:"rgb(38, 40, 170)"},
-//         {id:'104', userId:'join', username:'Cynthia', message:'Cynthia Joined', time:'10:30'},
-//         {id:'101', userId:'101', username:'Cynthia', message:'Hello', time:'10:31', accentColor:"rgb(38, 40, 170)"},
-//         {id:'102', userId:'1', username:'Robert', message:'How are we all doing', time:"10:31", accentColor:"rgb(89, 141, 29)"},
-//     ],
-//  },
+ {
+    chatId:'1',
+    messages:[
+        {id:'6101', userId:'21', username:'Jessica', message:'Hello everyone', time:'10:30', accentColor:"rgb(38, 40, 170)"},
+        {id:'104', userId:'join', username:'Cynthia', message:'Cynthia Joined', time:'10:30'},
+        {id:'101', userId:'101', username:'Cynthia', message:'Hello', time:'10:31', accentColor:"rgb(38, 40, 170)"},
+        {id:'102', userId:'1', username:'Robert', message:'How are we all doing', time:"10:31", accentColor:"rgb(89, 141, 29)"},
+    ],
+ },
 ]
 
 let images = [
@@ -83,7 +83,7 @@ app.post('/api/create-chat', async(req, res)=>{
 
     try {
         let chatExist = chatAlreadyExist(chats, chatName)
-        if(chatExist)return sendError(res, "Chat Exists", 400, "Chat name already exists")
+        if(chatExist)return sendError(res, "Chat Exists", 400, "Chat exists")
 
         // upload the profile images if they have one
         let profilePhotoId = null
@@ -101,9 +101,7 @@ app.post('/api/create-chat', async(req, res)=>{
         let newConversation = createConversation(newChat.id)
         conversations = [...conversations, newConversation]
 
-        let sendResults  = {chatDetails:newChat}
-
-        sendData(res, 201, sendResults, "Chat created successfully")
+        sendData(res, 201, newChat, "Chat created successfully")
 
     } catch (error) {
         sendError(res, error, 404, "Failed to create chat")
@@ -120,7 +118,7 @@ app.post('/api/join-chat', async(req, res)=>{
 
 //       check if chat is password protected
         let secured = chat.secured.status
-        if(secured && !password) return sendError(res, "Provide Password", 404, "Enter password to join chat")
+        if(secured && !password) return sendError(res, "Provide Password", 404, "Provide password")
 
 //       verify password if chat is password protected
         if(secured && password){
@@ -144,13 +142,14 @@ app.post('/api/join-chat', async(req, res)=>{
         chats = addMemberToChat(chats, chat.id, newMember)
 
         // get all messages from the chat
-        let messages = getAllMessagesOfAChat(conversations, chat.id)
+        let chatMessages = getAllMessagesOfAChat(conversations, chat.id)
         let chatDetails = getChatDetails(chats, chatName)
-        let sendResults = {chatDetails, messages}
+        let sendResults = {chatDetails, chatMessages}
 
         sendData(res, 200, sendResults, "Chat joined successfully")
 
     } catch (error) {
+        console.log(error)
         sendError(res, error, 404, "Failed to join chat")
     }
 })

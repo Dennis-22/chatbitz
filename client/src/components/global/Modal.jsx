@@ -1,9 +1,13 @@
+import ReactDom from 'react-dom'
 import styles from '../../css/modal.module.css'
 
-export default function Modal({children}){
-    return <div className={styles.modal}>
-        {children}
-    </div>
+export default function Modal({children}) {
+    return ReactDom.createPortal(
+        <div className={styles.modal}>
+            {children}
+        </div>,
+        document.getElementById('modal')
+    ) 
 }
 
 export function ModalButtons({activity, activityText, cancel, cancelText}){

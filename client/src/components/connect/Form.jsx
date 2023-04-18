@@ -1,26 +1,43 @@
 import Switch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import styles from '../../css/connect.module.css'
+import Button from '@mui/material/Button';
+import { useUserContext } from '../../utils/hooks';
 import {charsAllowed} from '../../utils/constance'
 import { _Connect } from '../../utils/types';
+import { userActions } from '../../utils/actions';
 
 export default function Form(props){
-    const {process, setProcess, connect, connectDetails, setConnectDetails} = props
+    const {userDispatch, userState:{user}} = useUserContext()
+    const {process, setProcess, connect, connectDetails, setConnectDetails, handleCreateChat, handleJoinChat} = props
     const {error} = process
 
-    const handleChange = (value, field)=>{
-        if(process.error) setProcess((cur) => ({...cur, error:""}))
-        setConnectDetails((cur) => ({...cur, [field]:value}))
-    }
+    // const handleChange = (value, field)=>{
+    //     if(process.error) setProcess((cur) => ({...cur, error:""}))
+    //     setConnectDetails((cur) => ({...cur, [field]:value}))
+    // }
 
     return <div className={styles.formContainer}>
         
         <p className={error ? styles.textShow : styles.textHide}>{error}</p>
 
-        <form className={styles.form}>
+        <form 
+            onSubmit={connect === _Connect.join ? handleJoinChat : handleCreateChat}
+            className={styles.form} 
+        >
 
-            <Input state={connectDetails.username} onChange={(value)=>handleChange(value, 'username')} label="Username" placeholder="Dennis Jeminal" maxLength={charsAllowed.username}/>
-            <Input state={connectDetails.chatName} onChange={(value)=>handleChange(value, 'chatName')} label="Chat's Name" placeholder="Gen-z's Court" maxLength={charsAllowed.chatName}/>
+            <Input state={user.username} 
+                onChange={(value)=>userDispatch({type:userActions.EDIT_USER, payload:{username:value}})} 
+                label="Username" 
+                placeholder="Dennis Jeminal" 
+                maxLength={charsAllowed.username}
+            />
+            <Input 
+                state={connectDetails.chatName} 
+                onChange={(value)=>setConnectDetails((cur) => ({...cur, chatName:value}))} 
+                label="Chat's Name" placeholder="Gen-z's Court" 
+                maxLength={charsAllowed.chatName}
+            />
             
 
             {connect === _Connect.create &&
@@ -29,17 +46,26 @@ export default function Form(props){
                     control={<Switch color="primary" />}
                     label="Secure chat"
                     labelPlacement="start"
-                    onChange={()=>handleChange(!connectDetails.secure, 'secure')}
+                    onChange={()=>setConnectDetails((cur) => ({...cur, secured:{status:!connectDetails.secured.status, password:""}}))}
                 />
             }
 
-            {connectDetails.secure && <Input 
-                    state={connectDetails.password} 
-                    onChange={(value)=>handleChange(value, "password")} 
+            {connectDetails.secured.status && <Input 
+                    state={connectDetails.secured.password} 
+                    onChange={(value)=>setConnectDetails((cur) => ({...cur, secured:{...cur.secured, password:value}}))} 
                     label="Password for your chat" 
                     placeholder="Use a secured password"
                 />
             }
+
+                <Button 
+                    variant="contained" 
+                    style={{width:'100%', marginTop:20}}
+                    // onClick={connect === create ? handleCreateChat : handleJoinChat}
+                    type="submit"
+                >
+                    {connect === _Connect.create ? "Create" : "Join"}
+                </Button>
 
         </form>
 
@@ -57,6 +83,7 @@ function Input({state, onChange, label, placeholder, maxLength}){
             placeholder={placeholder}
             onChange={(e)=>onChange(e.target.value)}
             maxLength={maxLength}
+            required
         />
     </section>
 }

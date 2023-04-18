@@ -23,7 +23,13 @@ function chatReducer(state, action){
             return {...state, messages:newMessages}
         }
         case(ADD_CHAT):{
-            return {...state, chats:[...state.chats, payload]}
+            const {chat, messages} = payload
+            let chatMessages = {chatId:chat.id, messages:messages}
+            return {...state,
+                currentChat:chat.id,
+                chats:[...state.chats, chat], 
+                messages:[...state.messages, chatMessages]
+            }
         }
         case(LEAVE_CHAT):{
             return {...state, chats:state.chats.filter(chat => chat.id !== payload)}

@@ -5,6 +5,7 @@ import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownR
 import KeyboardArrowUpRoundedIcon from '@mui/icons-material/KeyboardArrowUpRounded';
 import styles from  '../css/home.module.css'
 import logo from '../assets/logo.svg'
+import { _Connect } from '../utils/types';
 
 const documentation = [
     {
@@ -69,14 +70,14 @@ export default function Home(){
             <section className={styles.heroSec}>
                 <h1 className={styles.heroText}>Meet. Talk. Plan.</h1>
                 <p className={styles.heroSubText}>Connect with anyone, anywhere with zero effort and no limitation.</p>
-                <button className={styles.heroBtn} onClick={()=>navigation('/create')}>Start Chatting</button>
+                <button className={styles.heroBtn} onClick={()=>navigation('/connect')}>Start Chatting</button>
             </section>
         </div>
 
         <div className={styles.helper}>
             <h2 className={styles.helperText}>
-                <Link to="create" className={styles.helperLink}>Create</Link> a chat or 
-                <Link to="join" className={styles.helperLink}> join </Link> 
+                <Link to="connect" state={{connectType:_Connect.create}} className={styles.helperLink}>Create</Link> a chat or 
+                <Link to="connect" state={{connectType:_Connect.join}} className={styles.helperLink}> join </Link> 
                 an existing one and experience new way of communicating.
             </h2>
         </div>
