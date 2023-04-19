@@ -1,10 +1,11 @@
 import { useEffect, useRef } from 'react';
 import styles from '../../../css/messages.module.css'
 import {defMsgsIds} from '../../../utils/constance'
-import {useAppContext, useChatContext} from '../../../utils/hooks.js'
+import {useChatContext, useUserContext} from '../../../utils/hooks.js'
 
 export default function Messages() {
-  const {messages, setMessages} = useChatContext()
+  const {chatState} = useChatContext()
+  const messages = chatState.messages.find(chat=> chat.chatId === chatState.currentChat).messages
   const bottomRef = useRef(null);
 
   // useEffect(() => {
@@ -41,22 +42,22 @@ export default function Messages() {
 
 
 function Message({id: msgId, message, userId, username, accentColor, time, image}){
-    const {user} = useAppContext()
-  
-    return <div
-      className={
-        defMsgsIds.includes(userId) ? styles.defMsg : 
-        userId == user.id ? styles.uMsg : styles.pMsg
-      }
-    >
-      {
-        !defMsgsIds.includes(userId) && 
-        userId !== user.id && 
-        <p style={{color:accentColor}} className={styles.username}>{username}</p>
-      }
-      <p className={defMsgsIds.includes(userId) ? styles.defMsgText : styles.msgText}>
-        {message}
-      </p>
-      {!defMsgsIds.includes(userId) && <p className={styles.msgTime}>{time}</p>}
-    </div>
+  const {userState:{user}} = useUserContext()
+
+  return <div
+    className={
+      defMsgsIds.includes(userId) ? styles.defMsg : 
+      userId == user.id ? styles.uMsg : styles.pMsg
+    }
+  >
+    {
+      !defMsgsIds.includes(userId) && 
+      userId !== user.id && 
+      <p style={{color:accentColor}} className={styles.username}>{username}</p>
+    }
+    <p className={defMsgsIds.includes(userId) ? styles.defMsgText : styles.msgText}>
+      {message}
+    </p>
+    {!defMsgsIds.includes(userId) && <p className={styles.msgTime}>{time}</p>}
+  </div>
 }

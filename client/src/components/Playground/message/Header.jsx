@@ -4,63 +4,53 @@ import ExitToAppRoundedIcon from '@mui/icons-material/ExitToAppRounded';
 import GroupRoundedIcon from '@mui/icons-material/GroupRounded';
 import styles from '../../../css/message.module.css'
 import ProfilePhoto from '../../global/ProfilePhoto'
-import { useAppContext, useChatContext } from '../../../utils/hooks';
+import { useAppContext, useChatContext, usePlaygroundContext } from '../../../utils/hooks';
+import { ToggleMobileChats, ToggleLeaveChat } from '../../../context/Playground/playgroundDispatches';
 import { screenSizes } from '../../../utils/constance';
 
 export default function Header() {
-  const {deviceWidth, setShowMobileChats, setShowMobileChatDetails} = useAppContext()
-  const {getCurrentChatDetails, setLeaveChat, peopleTyping} = useChatContext()
+  const {deviceWidth} = useAppContext()
+  const {chatState:{chats, currentChat, peopleTyping}, } = useChatContext()
+  const {playDispatch} = usePlaygroundContext()
+  // const {getCurrentChatDetails, setLeaveChat, peopleTyping} = useChatContext()
 
-  const {chatName, members, id} = getCurrentChatDetails()
+  const chat = chats.find(chat => chat.id === currentChat)
+  const {chatName, members, id} = chat
 
-  const handleLeaveChat = ()=>{
-    // set the chat id and status of the modal to true
-    // logic is handled in modal OK press
-    setLeaveChat({show:true, chatId:id})
-  }
 
   const handleOpenMobileChats = ()=>{
     // check if the device width is greater than small size before showing
-    if(deviceWidth <= screenSizes.small)setShowMobileChats(true)
-    return null
+    // if(deviceWidth <= screenSizes.small)setShowMobileChats(true)
+    // return null
   }
 
   const handleOpenMobileChatDetails = ()=>{
-    if(deviceWidth <= screenSizes.large) setShowMobileChatDetails(true)
-    return null
+    // if(deviceWidth <= screenSizes.large) setShowMobileChatDetails(true)
+    // return null
   }
 
   return (
     <div className={styles.header}>
         <div className={styles.head}>
-          <section className={styles.details}>
+          <div className={styles.details}>
             {
               deviceWidth <= screenSizes.small &&
-              <IconButton onClick={handleOpenMobileChats} style={{backgroundColor:'#1d1d1d', marginRight:'5px'}}>
+              <IconButton onClick={()=>ToggleMobileChats(playDispatch, true)} style={{marginRight:'5px'}}>
                 <MenuRoundedIcon sx={{color:"rgb(143, 143, 143)"}}/>
               </IconButton>
             }
-            <ProfilePhoto name={chatName}/>
-            <p className={styles.name} title="Chat title">{chatName}</p>
-          </section>
+            <div onClick={handleOpenMobileChatDetails} className={styles.chatDetails}>
+              <ProfilePhoto name={chatName}/>
+              <p className={styles.name} title="Chat title">{chatName}</p>
+            </div>
+          </div>
 
 
-          <section className={styles.options}>
-            <IconButton title="Leave chat" onClick={handleLeaveChat} style={{backgroundColor:"#1d1d1d"}}>
-              <ExitToAppRoundedIcon sx={{color:'rgb(143, 143, 143)'}}
-                fontSize={deviceWidth > screenSizes.small ? 'medium' : 'small'}
-              />
-            </IconButton>
-
-            {
-              deviceWidth <= screenSizes.large &&
-              <IconButton onClick={handleOpenMobileChatDetails} style={{backgroundColor:'#1d1d1d'}}>
-                <MenuRoundedIcon sx={{color:'rgb(143, 143, 143)'}}
-                  fontSize={deviceWidth > screenSizes.small ? 'medium' : 'small'}
-                />
-              </IconButton>
-            }
-          </section>
+          <IconButton title="Leave chat" onClick={()=>ToggleLeaveChat(playDispatch, true)}>
+            <ExitToAppRoundedIcon sx={{color:'rgb(143, 143, 143)'}}
+              fontSize={deviceWidth > screenSizes.small ? 'medium' : 'small'}
+            />
+          </IconButton>
     
         </div>
 

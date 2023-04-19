@@ -1,23 +1,21 @@
 import { useNavigate } from "react-router-dom"
 import styles from '../../css/leave-chat-modal.module.css'
 import Modal, {ModalButtons} from "./Modal"
-import { useAppContext, useChatContext } from '../../utils/hooks'
+import { useUserContext, useChatContext, usePlaygroundContext } from '../../utils/hooks'
 import { socketConstance } from '../../utils/constance'
+import { _Connect } from "../../utils/types"
+import { ToggleLeaveChat } from "../../context/Playground/playgroundDispatches"
 
 export default function LeaveChatModal() {
-  const {user} = useAppContext()
-  const {socket, currentChat, setLeaveChat} = useChatContext()
+  const {userState:{user}} = useUserContext()
+  const {socket, chatState:{currentChat}} = useChatContext()
+  const {playDispatch} = usePlaygroundContext()
   const navigation = useNavigate()
-
-  const handleCancel = ()=>{
-    setLeaveChat({show:false, chatId:null})
-  }
 
   const handleLeave = ()=>{
     let leaveProps = {id:currentChat, userId:user.id, username:user.username}
     socket?.emit(socketConstance.LEAVE_CHAT, leaveProps)
-    setLeaveChat({show:false, chatId:null})
-    navigation('/join')
+    navigation('/connect', {state:{connectType:_Connect.create}})
   }
 
 
@@ -32,7 +30,7 @@ export default function LeaveChatModal() {
         <ModalButtons 
           activity={handleLeave}
           activityText="Leave"
-          cancel={handleCancel}
+          cancel={()=>ToggleLeaveChat(playDispatch, false)}
           cancelText="Stay"
         />
       </div>

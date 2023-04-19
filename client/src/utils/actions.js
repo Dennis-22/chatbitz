@@ -15,3 +15,8 @@ export const chatActions = {
     REMOVE_MEMBER_FROM_CHAT:"REMOVE-MEMBER-FROM-CHAT",
     ADD_MESSAGE:"ADD-MESSAGE"
 }
+
+export const playgroundActions = {
+    SHOW_MOBILE_CHATS:"SHOW-MOBILE-CHATS",
+    SHOW_LEAVE_CHAT:"SHOW-LEAVE-CHAT",
+}
