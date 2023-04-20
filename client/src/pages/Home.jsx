@@ -70,7 +70,7 @@ export default function Home(){
             <section className={styles.heroSec}>
                 <h1 className={styles.heroText}>Meet. Talk. Plan.</h1>
                 <p className={styles.heroSubText}>Connect with anyone, anywhere with zero effort and no limitation.</p>
-                <button className={styles.heroBtn} onClick={()=>navigation('/connect')}>Start Chatting</button>
+                <button className={styles.heroBtn} onClick={()=>navigation('/connect', {state:{connectType:_Connect.create}})}>Start Chatting</button>
             </section>
         </div>
 

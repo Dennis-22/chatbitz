@@ -1,5 +1,5 @@
 import {useContext} from 'react'
-import { AppContext } from '../appContext'
+import { AppContext } from '../context/appContext'
 import { UserContext } from '../context/user/UserContext'
 import { ChatContext } from '../context/chat/ChatContext'
 import { PlaygroundContext } from '../context/Playground/PlaygroundContext'

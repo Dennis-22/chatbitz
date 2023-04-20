@@ -1,10 +1,9 @@
+import { memo } from 'react'
 import styles from '../../../css/chats.module.css'
 import { useChatContext } from '../../../utils/hooks'
 import ProfilePhoto from '../../global/ProfilePhoto'
 import { usePlaygroundContext } from '../../../utils/hooks'
-import {ToggleMobileChats} from '../../../context/Playground/playgroundDispatches'
 import { chatActions } from '../../../utils/actions'
-import { memo } from 'react'
 
 export function LargeScreenChats(){
   return <div className={styles.body}>
@@ -13,7 +12,7 @@ export function LargeScreenChats(){
 }
 
 export function MobileChats(){
-  const {playDispatch} = usePlaygroundContext()
+  const {toggleMobileChats} = usePlaygroundContext()
   return <div className={styles.mobChat}>
     <div className={styles.mobChatContent}>
       <Content />
@@ -21,7 +20,7 @@ export function MobileChats(){
 
     <div 
       className={styles.mobChatEmpty} 
-      onClick={()=>ToggleMobileChats(playDispatch, false)}
+      onClick={()=>toggleMobileChats(false)}
     />
   </div>
 }

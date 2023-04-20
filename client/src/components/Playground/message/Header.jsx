@@ -5,29 +5,23 @@ import GroupRoundedIcon from '@mui/icons-material/GroupRounded';
 import styles from '../../../css/message.module.css'
 import ProfilePhoto from '../../global/ProfilePhoto'
 import { useAppContext, useChatContext, usePlaygroundContext } from '../../../utils/hooks';
-import { ToggleMobileChats, ToggleLeaveChat } from '../../../context/Playground/playgroundDispatches';
 import { screenSizes } from '../../../utils/constance';
 
 export default function Header() {
   const {deviceWidth} = useAppContext()
   const {chatState:{chats, currentChat, peopleTyping}, } = useChatContext()
-  const {playDispatch} = usePlaygroundContext()
-  // const {getCurrentChatDetails, setLeaveChat, peopleTyping} = useChatContext()
+  const {toggleMobileChats, toggleLeaveChat, toggleChatDetails} = usePlaygroundContext()
 
   const chat = chats.find(chat => chat.id === currentChat)
-  const {chatName, members, id} = chat
+  const {chatName, members} = chat
 
 
   const handleOpenMobileChats = ()=>{
     // check if the device width is greater than small size before showing
-    // if(deviceWidth <= screenSizes.small)setShowMobileChats(true)
-    // return null
+    if(deviceWidth <= screenSizes.large) toggleMobileChats(true)
+    return null
   }
 
-  const handleOpenMobileChatDetails = ()=>{
-    // if(deviceWidth <= screenSizes.large) setShowMobileChatDetails(true)
-    // return null
-  }
 
   return (
     <div className={styles.header}>
@@ -35,18 +29,17 @@ export default function Header() {
           <div className={styles.details}>
             {
               deviceWidth <= screenSizes.small &&
-              <IconButton onClick={()=>ToggleMobileChats(playDispatch, true)} style={{marginRight:'5px'}}>
+              <IconButton onClick={handleOpenMobileChats} style={{marginRight:'5px'}}>
                 <MenuRoundedIcon sx={{color:"rgb(143, 143, 143)"}}/>
               </IconButton>
             }
-            <div onClick={handleOpenMobileChatDetails} className={styles.chatDetails}>
+            <div onClick={()=>toggleChatDetails(true)} className={styles.chatDetails}>
               <ProfilePhoto name={chatName}/>
               <p className={styles.name} title="Chat title">{chatName}</p>
             </div>
           </div>
 
-
-          <IconButton title="Leave chat" onClick={()=>ToggleLeaveChat(playDispatch, true)}>
+          <IconButton title="Leave chat" onClick={()=>toggleLeaveChat(true)}>
             <ExitToAppRoundedIcon sx={{color:'rgb(143, 143, 143)'}}
               fontSize={deviceWidth > screenSizes.small ? 'medium' : 'small'}
             />

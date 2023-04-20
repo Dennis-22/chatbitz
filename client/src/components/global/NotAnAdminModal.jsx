@@ -2,10 +2,10 @@
 import DoNotDisturbRounded from '@mui/icons-material/DoNotDisturbRounded'
 import styles from '../../css/not-admin-modal.module.css'
 import Modal, {ModalButtons} from "./Modal"
-import { useAppContext } from "../../utils/hooks"
+import { usePlaygroundContext } from "../../utils/hooks"
 
 export default function NotAnAdminModal() {
-    const {setShowNotAdminModal} = useAppContext()
+   const {toggleNotAdmin} = usePlaygroundContext()
 
     return <Modal>
         <div className={styles.container}>
@@ -15,7 +15,7 @@ export default function NotAnAdminModal() {
                 <DoNotDisturbRounded fontSize="large" sx={{color:"rgba(143, 143, 143, .6)"}}/>
             </div>
             <ModalButtons
-                activity={()=>setShowNotAdminModal(false)}
+                activity={()=>toggleNotAdmin(false)}
             />
         </div>
     </Modal>

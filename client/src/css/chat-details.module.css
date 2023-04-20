@@ -1,100 +1,83 @@
 .body{
-    width:25%;
-    padding: 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    /* background-color: var(--glass); */
-}
-
-.detailsWrap{
-    background-color: var(--glass);
-    width: 100%;
+    background-color: var(--background-color);
+    width: 80%;
+    height: 90%;
     border-radius: 5px;
+    padding: 20px;
 }
 
-.chatDetails{
-    padding: 10px;
+.header{
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.details{
+    flex:1;
+    display: flex;
     align-items: center;
+    gap: 15px;
+    border-bottom: solid 1px var(--border-color);
+    padding:15px
+}
+
+.detailsText{
+
 }
 
 .chatName{
-    margin-top: 10px;
     font-weight: var(--bold-weight);
+    margin-bottom: 5px;
 }
 
-.members{
-    padding: 10px;
-}
-
-.membersText{
+.membersCount{
     color: var(--faint);
     font-size: var(--small);
     font-weight: var(--semi-bold-weight);
 }
 
+.members{
+    margin-top: 20px;
+}
+
+.membersMemCount{
+    margin-bottom: 10px;
+}
+
+.adminMemText{
+    color: var(--faint);
+    margin-bottom: 10px;
+}
+
 .membersWrap{
-    margin-top: 10px;
-    /* background-color: var(--glass); */
-    padding: 20px;
-
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    justify-content: center;
-
-    border-radius: 5px;
-    max-height: 400px;
-    background-color: var(--background-color);
-    overflow-y: auto;
+    overflow-y: scroll;
+    height: 60vh;
 }
 
 .member{
-    display: flex;
-    gap: 5px;
-    flex-direction: column;
-    align-items: center;
+    background-color: var(--glass);
+    margin-top: 10px;
+    margin-bottom: 10px;
+    padding: 15px 10px;
+    border-radius: 5px;
     cursor: pointer;
+    border: 1px solid var(--border-color);
 }
 
-.memberName{
-    font-size: var(--tiny);
-    color: var(--white-2);
-}
-
-.admin{
-    color: var(--brown);
-    font-size: var(--tiny);
-}
-
-.you{
-    font-size: var(--tiny);
-}
-
-/* mobile */
-.mobChatDetails{
-    position: fixed;
-    top: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: var(--popup-background);
+.memberDetails{
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    gap: 10px;
 }
 
-.mobChatDetailsContent{
-    flex: 1;
-    background-color: var(--background-color);
-    border-top-left-radius: 10px;
-    border-top-right-radius: 10px;
+.messagesSent{
+    color: var(--faint);
 }
 
-.empty{
-    height: 25%;
+.memberUtils{
+    margin-top: 20px;
 }
 
-@media screen and (max-width: 770px) {
-    .detailsWrap{height: 100%;}
+@media screen and (max-width: 768px){
+    .body{width:95%}
 }

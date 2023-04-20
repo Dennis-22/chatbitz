@@ -4,12 +4,12 @@ import Modal, {ModalButtons} from "./Modal"
 import { useUserContext, useChatContext, usePlaygroundContext } from '../../utils/hooks'
 import { socketConstance } from '../../utils/constance'
 import { _Connect } from "../../utils/types"
-import { ToggleLeaveChat } from "../../context/Playground/playgroundDispatches"
+
 
 export default function LeaveChatModal() {
   const {userState:{user}} = useUserContext()
   const {socket, chatState:{currentChat}} = useChatContext()
-  const {playDispatch} = usePlaygroundContext()
+  const {toggleLeaveChat} = usePlaygroundContext()
   const navigation = useNavigate()
 
   const handleLeave = ()=>{
@@ -30,7 +30,7 @@ export default function LeaveChatModal() {
         <ModalButtons 
           activity={handleLeave}
           activityText="Leave"
-          cancel={()=>ToggleLeaveChat(playDispatch, false)}
+          cancel={()=>toggleLeaveChat(false)}
           cancelText="Stay"
         />
       </div>

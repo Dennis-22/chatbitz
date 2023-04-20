@@ -44,25 +44,3 @@
 @media screen and (max-width: 700px){
     .formContainer{width: 95%;}
 }
-
-/* 
-.form-error-text{
-    color: var(--red);
-    font-weight: 600;
-}
-
-
-
-.form-logo-div{
-    width: 40%;
-    display: grid;
-    place-items: center;
-}
-
-.form-logo{
-    width: 230px;
-    height: 230px;
-}
-
-
- */

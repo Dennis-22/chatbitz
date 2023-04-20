@@ -1,18 +1,16 @@
 import { playgroundActions } from "../../utils/actions"
-const {SHOW_MOBILE_CHATS, SHOW_LEAVE_CHAT} = playgroundActions
-// const [showMobileChats, setShowMobileChats] = useState(false) //chats display on mobile devices
-// const [showMobileChatDetails, setShowMobileChatDetails] = useState(false) //chat display on mobile devices
-// const [showChatMemberDetails, setShowChatMemberDetails] = useState(_ChatMemberDetails) // when a chat member is clicked
-// const [showPopupInput, setShowPopupInput] = useState(false)
-// const [showRemovedModal, setShowRemovedModal] = useState({show:false, adminName:''}) //when user is removed - adminName = the admin who removed user
-// const [showNotAdminModal, setShowNotAdminModal] = useState(false) 
+const {SHOW_MOBILE_CHATS, SHOW_LEAVE_CHAT, SHOW_CHAT_DETAILS,
+    SHOW_YOU_WERE_REMOVED, SHOW_NOT_ADMIN,
+} = playgroundActions
+
 
 const state = {
     showMobileChats:false,
     showLeaveChat:false,
     showChatDetails:false,
     showRemoveUser:false,
-    showNotAdmin:false
+    showNotAdmin:false,
+    showYouWereRemoved:false
 }
 
 function playgroundReducer(state, action){
@@ -23,6 +21,15 @@ function playgroundReducer(state, action){
         }
         case(SHOW_LEAVE_CHAT):{
             return {...state, showLeaveChat:payload}
+        }
+        case(SHOW_CHAT_DETAILS):{
+            return {...state, showChatDetails:payload}
+        }
+        case(SHOW_YOU_WERE_REMOVED):{
+            return {...state, showYouWereRemoved:payload}
+        }
+        case(SHOW_NOT_ADMIN):{
+            return {...state, showNotAdmin:payload}
         }
     }
 

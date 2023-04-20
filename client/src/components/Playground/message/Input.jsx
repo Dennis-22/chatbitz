@@ -1,33 +1,31 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import Picker from 'emoji-picker-react';
 import IconButton from '@mui/material/IconButton';
 import EmojiEmotionsRoundedIcon from '@mui/icons-material/EmojiEmotionsRounded';
 import OpenInFullRoundedIcon from '@mui/icons-material/OpenInFullRounded';
 import SendRoundedIcon from '@mui/icons-material/SendRounded';
 import styles from '../../../css/message.module.css'
+import PopupInput from './PopupInput';
 import { useAppContext, useChatContext, useUserContext } from '../../../utils/hooks';
 import {idGenerator} from '../../../utils/helpers'
 import { socketConstance, screenSizes } from '../../../utils/constance';
 import { chatActions } from '../../../utils/actions';
 
 export default function Input() {
-  const {deviceWidth, setShowPopupInput} = useAppContext()
+  const {deviceWidth} = useAppContext()
   const {userState:{user}} = useUserContext()
   const {chatDispatch, socket, chatState:{currentChat}} = useChatContext()
   const [message, setMessage] = useState('')
+  const [showPopupInput, setShowPopupInput] = useState(false)
   const [showEmojiPopup, setShowEmojiPopup] = useState(false)
 
   const handleChange = (e)=>{
-    // setMessage(e.target.value)
+    setMessage(e.target.value)
     // socket?.emit(socketConstance.TYPING, {id:currentChat.id, username:user.username})
   }
 
-  const handleShowPopupInput = ()=>{
-    // setSharedMessage(message)
-    // setShowPopupInput(true)
-  }
 
-  const handleSendMessage = ()=>{
+  const handleSendMessage = useCallback(()=>{
     // if(!message) return null
     let msgData = {
       // username:user.username, userId:user.id, 
@@ -41,7 +39,8 @@ export default function Input() {
     // socket.emit(socketConstance.SEND_MESSAGE, msgData)
     chatDispatch({type:chatActions.ADD_MESSAGE, payload:{id:currentChat, message:msgData}})
     setMessage("")
-  }
+    if(showPopupInput) setShowPopupInput(false)
+  },[message])
 
   // const onEmojiClick = (event, emojiObject) => setMessage(message + emojiObject.emoji)
   const onEmojiClick = (emoji)=>{
@@ -56,12 +55,12 @@ export default function Input() {
           <div className={styles.inputWrap}>
             <input
               value={message}
-              onChange={(e)=>setMessage(e.target.value)} 
+              onChange={handleChange} 
               className={styles.textInput} 
               placeholder="Type a message"
               onKeyDown={(e)=>{if(e.key === 'Enter'){handleSendMessage()}}}
             />
-            <IconButton onClick={handleShowPopupInput} title="expand input">
+            <IconButton onClick={()=>setShowPopupInput(true)} title="expand input">
               <OpenInFullRoundedIcon sx={{color:"#6f4c5b"}} className={styles.inputIcon} 
                 fontSize={deviceWidth > screenSizes.small ? 'medium' : 'small'}
               />
@@ -82,6 +81,16 @@ export default function Input() {
           </div>
         </div>
     </div>
+
+    {
+      showPopupInput &&
+      <PopupInput
+        close={()=>setShowPopupInput(false)}
+        message={message}
+        handleChange={handleChange}
+        handleSendMessage={handleSendMessage}
+      />
+    }
   </>
   )
 }
