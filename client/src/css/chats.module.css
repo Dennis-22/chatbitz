@@ -21,6 +21,7 @@
 }
 
 .chat, .chatSelected{
+    background-color: var(--glass);
     margin: 13px 0;
     padding: 20px 10px;
     display: flex;
@@ -30,10 +31,10 @@
 
 .chatSelected{ 
     border: 3px solid var(--border-color);
+    box-shadow: var(--box-shadow-4);
 }
 
-.chat{background-color: var(--glass);}
-.chat:hover{background-color: var(--background-color);}
+.chat:hover{border: 2px solid var(--border-color)}
 
 .textWrap{
     flex: 1;

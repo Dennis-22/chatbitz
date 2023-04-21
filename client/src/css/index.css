@@ -63,4 +63,6 @@ body {
   font-weight: var(--normal-weight);
 
   background-color: var(--background-color);
+  max-width: 1600px;
+  margin:0 auto;
 }
