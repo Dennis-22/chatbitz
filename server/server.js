@@ -28,12 +28,12 @@ const PORT = process.env.port || 4000
 
 
 let chats = [
-  {id:'1', coverPhoto:'', chatName:"Hell 🔥🔥🔥", secured:{status:false, password: 'canopy'},
-      members:[
-        {id:'621', username: 'Jessica', admin:true, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},
-        {id:'2', username: 'Lucy', admin:false, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},     
-    ]
-  },
+//   {id:'1', coverPhoto:'', chatName:"Hell 🔥🔥🔥", secured:{status:false, password: 'canopy'},
+//       members:[
+//         {id:'621', username: 'Jessica', admin:true, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},
+//         {id:'2', username: 'Lucy', admin:false, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},     
+//     ]
+//   },
 //   {id:'2', coverPhoto:'', chatName:"Kitchen", secured:{status:false, password: 'canopy'},
 //   members:[
 //         {id:'21', username: 'Jessica', admin:true, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},
@@ -43,15 +43,15 @@ let chats = [
 ]
 
 let conversations = [
- {
-    chatId:'1',
-    messages:[
-        {id:'6101', userId:'21', username:'Jessica', message:'Hello everyone', time:'10:30', accentColor:"rgb(38, 40, 170)"},
-        {id:'104', userId:'join', username:'Cynthia', message:'Cynthia Joined', time:'10:30'},
-        {id:'101', userId:'101', username:'Cynthia', message:'Hello', time:'10:31', accentColor:"rgb(38, 40, 170)"},
-        {id:'102', userId:'1', username:'Robert', message:'How are we all doing', time:"10:31", accentColor:"rgb(89, 141, 29)"},
-    ],
- },
+//  {
+//     chatId:'1',
+//     messages:[
+//         {id:'6101', userId:'21', username:'Jessica', message:'Hello everyone', time:'10:30', accentColor:"rgb(38, 40, 170)"},
+//         {id:'104', userId:'join', username:'Cynthia', message:'Cynthia Joined', time:'10:30'},
+//         {id:'101', userId:'101', username:'Cynthia', message:'Hello', time:'10:31', accentColor:"rgb(38, 40, 170)"},
+//         {id:'102', userId:'1', username:'Robert', message:'How are we all doing', time:"10:31", accentColor:"rgb(89, 141, 29)"},
+//     ],
+//  },
 ]
 
 let images = [
@@ -72,6 +72,8 @@ const io = new Server(server, {
     }
 })
 
+// console.log(getUserChats(chats, '20'))
+// console.log(getAllMessagesOfAChat(conversations, '1'))
 
 app.get('/', (req, res) => {
     res.send('ChatBitz Server 1.5');
@@ -155,19 +157,31 @@ app.post('/api/join-chat', async(req, res)=>{
 })
 
 app.get('/api/get-user-chats/:userId', async(req,res)=>{
-    console.log('fetching user chats')
     const {userId} = req.params
     try {
-        let userChats = getUserChats(chats, userId)
-        sendData(res, 200, userChats)
+        // get user chats
+        let getChats = getUserChats(chats, userId)
+
+        let userChats = getChats.length > 0 ? getChats : null
+        let messages = []
+
+        if(userChats){
+            // get the messages of each chat
+            for(let chat of userChats){
+                let chatMessage = getAllMessagesOfAChat(conversations, chat.id)
+                messages.push({chatId:chat.id, messages:chatMessage})
+            }
+        }
+
+        const data = {chats:userChats, messages}
+        sendData(res, 200, data)
     } catch (error) {
         sendError(res, error, 400, 'Failed to get user chats')
     }
 })
 
 app.get('/api/get-chat-messages/:chatId', (req, res)=>{
-    console.log('fetching chat messages')
-
+   
     const {chatId} = req.params
     try {
         let messages = getAllMessagesOfAChat(conversations, chatId)
