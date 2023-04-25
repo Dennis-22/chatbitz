@@ -1,8 +1,9 @@
 import { userActions } from "../../utils/actions"
+import { _User } from "../../utils/types"
 const {SET_USER, EDIT_USER, ADD_CHAT, REMOVE_CHAT} = userActions
 
 const state = {
-    user:{username:"", id:"", profilePhoto:"", accentColor:""},
+    user:_User,
     chats:[] // array of chat ids
 }
 

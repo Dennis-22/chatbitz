@@ -5,8 +5,9 @@ import {useChatContext, useUserContext} from '../../../utils/hooks.js'
 
 export default function Messages() {
   const {chatState} = useChatContext()
-  const messages = chatState.messages.find(chat=> chat.chatId === chatState.currentChat).messages
+  const messages = chatState.messages.find(msg=> msg.chatId === chatState.currentChat).messages
   const bottomRef = useRef(null);
+
 
   // useEffect(() => {
   //   // 👇️ simulate chat messages flowing in

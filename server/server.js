@@ -52,6 +52,18 @@ let conversations = [
 //         {id:'102', userId:'1', username:'Robert', message:'How are we all doing', time:"10:31", accentColor:"rgb(89, 141, 29)"},
 //     ],
 //  },
+//  {
+//     chatId:'2',
+//     messages:[
+//         {id:'6101', userId:'21', username:'Jessica', message:'Hello everyone', time:'10:30', accentColor:"rgb(38, 40, 170)"},
+//         {id:'104', userId:'join', username:'Cynthia', message:'Cynthia Joined', time:'10:30'},
+//         {id:'101', userId:'101', username:'Cynthia', message:'Hello', time:'10:31', accentColor:"rgb(38, 40, 170)"},
+//         {id:'102', userId:'1', username:'Robert', message:'How are we all doing', time:"10:31", accentColor:"rgb(89, 141, 29)"},
+//         {id:'6101', userId:'21', username:'Jessica', message:'Hello everyone', time:'10:30', accentColor:"rgb(38, 40, 170)"},
+//         {id:'104', userId:'join', username:'Cynthia', message:'Cynthia Joined', time:'10:30'},
+//         {id:'101', userId:'101', username:'Cynthia', message:'Hello', time:'10:31', accentColor:"rgb(38, 40, 170)"},
+//     ],
+//  },
 ]
 
 let images = [
@@ -163,6 +175,8 @@ app.get('/api/get-user-chats/:userId', async(req,res)=>{
         let getChats = getUserChats(chats, userId)
 
         let userChats = getChats.length > 0 ? getChats : null
+        if(!userChats) return sendError(res, "No chats", 404, "You have no chats. Create or join a chat")
+
         let messages = []
 
         if(userChats){

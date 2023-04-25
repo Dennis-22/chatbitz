@@ -1,17 +1,16 @@
 import Button from '@mui/material/Button';
+import DoNotDisturbRounded from '@mui/icons-material/DoNotDisturbRounded'
 import styles from '../../css/error.module.css'
+import Modal from './Modal'
 
-export default function Error({text, retryFn}) {
-  return (
-    <div className={styles.error}>
-        <p className={styles.text}>{text || 'Failed to get data'}</p>
-        <Button 
-            variant="contained" 
-            onClick={retryFn}
-            style={{marginTop:30}}
-        >
-            Retry
-        </Button>
+export function ModalError({text, retryFn}){
+  return <Modal>
+    <div className={styles.wrap}>
+      <DoNotDisturbRounded fontSize="large" sx={{color:"rgba(143, 143, 143, .6)"}}/>
+      <p className={styles.text}>{text || 'Failed to get data'}</p>
+      <Button variant="contained" onClick={retryFn}>
+          Retry
+      </Button>
     </div>
-  )
+  </Modal>
 }

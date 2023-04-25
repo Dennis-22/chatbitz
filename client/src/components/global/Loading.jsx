@@ -10,10 +10,6 @@ export function ModalLoading(){
   </Modal>
 }
 
-export default function Loading(){
-  return <h1>Loading</h1>
-}
-
 export function InLoading(){
   return <div className={styles.inLoading}>
     <CircularProgress sx={{color:'rgba(255, 255, 255, 0.863)'}}/>

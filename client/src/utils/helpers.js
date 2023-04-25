@@ -21,9 +21,13 @@ async function requestMaker(method, url, data){
     }
 
     if(method === 'GET'){
-        let results = await fetch(url)
-        let response = await results.json()
-        return response
+        let request = await fetch(url)
+        if(request.ok){
+            let results = await request.json()
+            return {error:false, data:results.data}
+        }
+        let errorMsg = await request.json() 
+        return {error:true, message:errorMsg.message}
     }
 
     if(method === 'PUT'){

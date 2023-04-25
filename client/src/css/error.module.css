@@ -1,11 +1,17 @@
-.error{
-    text-align: center;
-    display: grid;
-    place-content: center;
-    height:200px
+.wrap{
+    width: 45%;
+    max-width: 400px;
+    padding: 20px 10px;
+    background-color: var(--black);
+    border-radius: 5px;
+    display: flex;
+    gap: 20px;
+    flex-direction: column;
+    place-items: center;
 }
 
 .text{
     color: var(--white-2);
+    font-size: var(--large);
     font-weight: var(--light-weight);
 }

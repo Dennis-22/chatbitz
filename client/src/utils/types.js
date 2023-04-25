@@ -1,6 +1,13 @@
 // How stuff should look like at their default state
 // items here are supposed to look like this in their default state. they would carry values when running the app.
 
+const _User = {
+    username:"", 
+    id:"", 
+    profilePhoto:"", 
+    accentColor:""
+}
+
 const _Connect = {
     create:'create',
     join:'join'
@@ -22,6 +29,7 @@ const _ChatMemberDetails = {
 }
 
 export {
+    _User,
     _Connect,
     _PerformActionBeforeStart,
     _ChatMemberDetails

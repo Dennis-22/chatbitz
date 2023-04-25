@@ -41,6 +41,7 @@ export default function Connect(){
     // console.log('user chats', chatState.chats)
     // console.log('crrent chat', chatState.currentChat)
     // console.log('chat messages', chatState.messages)
+    console.log(user)
 
     
     const handleCreateChat = async(e)=>{
