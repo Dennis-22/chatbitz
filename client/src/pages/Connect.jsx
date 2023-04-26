@@ -32,7 +32,7 @@ const joinInputs = {
 
 export default function Connect(){
     const {userDispatch, userState:{user, chats}} = useUserContext()
-    const {chatState, chatDispatch} = useChatContext()
+    const {chatState, chatDispatch, socket, connectToServer} = useChatContext()
     const [connect, setConnect] = useState(useLocation()?.state?.connectType || create)
     const [connectDetails, setConnectDetails] = useState(null)
     const [process, setProcess] = useState({loading:false, error:""})
@@ -67,7 +67,9 @@ export default function Connect(){
                 payload:{chat:data, messages:[]}
             })
             setProcess({loading:false, error:""})
-            navigate('/playground', {state:{connectType:create}})
+            // connect to server and navigate to playground
+            if(!socket) await connectToServer()
+            navigate('/playground', {state:{connectType:create, chatId:data.id}})
         } catch (error) {
             console.log(error)
             setProcess({loading:false, error:"An error occurred please try again later"})
@@ -108,8 +110,9 @@ export default function Connect(){
                 })
 
                 setProcess({loading:false, error:""})
-                
-                navigate('/playground', {state:{connectType:join}})
+                // connect to socket and navigate to playground
+                if(!socket) await connectToServer()
+                navigate('/playground', {state:{connectType:join, chatId:chatDetails.id}})
                 
             }else{
 

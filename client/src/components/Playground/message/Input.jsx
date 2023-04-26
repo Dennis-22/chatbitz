@@ -26,17 +26,17 @@ export default function Input() {
 
 
   const handleSendMessage = useCallback(()=>{
-    // if(!message) return null
+    if(!message) return null
     let msgData = {
-      // username:user.username, userId:user.id, 
-      // accentColor:user.accentColor,
-      username:"ama",
-      accentColor:"red",
+      userId:user.id,
+      username:user.username, 
+      accentColor:user.accentColor,
       message, id:idGenerator(), //id will mismatch with the server but its ok
       chatId:currentChat,
       time: new Date(Date.now()).getHours() + ":" + new Date(Date.now()).getMinutes() 
     }
-    // socket.emit(socketConstance.SEND_MESSAGE, msgData)
+
+    socket.emit(socketConstance.SEND_MESSAGE, msgData)
     chatDispatch({type:chatActions.ADD_MESSAGE, payload:{id:currentChat, message:msgData}})
     setMessage("")
     if(showPopupInput) setShowPopupInput(false)

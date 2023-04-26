@@ -4,17 +4,19 @@ import Modal, {ModalButtons} from "./Modal"
 import { useUserContext, useChatContext, usePlaygroundContext } from '../../utils/hooks'
 import { socketConstance } from '../../utils/constance'
 import { _Connect } from "../../utils/types"
+import { chatActions } from "../../utils/actions"
 
 
 export default function LeaveChatModal() {
   const {userState:{user}} = useUserContext()
-  const {socket, chatState:{currentChat}} = useChatContext()
+  const {socket, chatDispatch, chatState:{currentChat}} = useChatContext()
   const {toggleLeaveChat} = usePlaygroundContext()
   const navigation = useNavigate()
 
   const handleLeave = ()=>{
     let leaveProps = {id:currentChat, userId:user.id, username:user.username}
     socket?.emit(socketConstance.LEAVE_CHAT, leaveProps)
+    chatDispatch({type:chatActions.LEAVE_CHAT, payload:currentChat})
     navigation('/connect', {state:{connectType:_Connect.create}})
   }
 

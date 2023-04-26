@@ -4,7 +4,7 @@ const {SET_USER, EDIT_USER, ADD_CHAT, REMOVE_CHAT} = userActions
 
 const state = {
     user:_User,
-    chats:[] // array of chat ids
+    // chats:[] // array of chat ids
 }
 
 function userReducer(state, action){
@@ -16,12 +16,12 @@ function userReducer(state, action){
         case(EDIT_USER):{
             return {...state, user:{...state.user, ...payload}}
         }
-        case(ADD_CHAT):{
-            return {...state, chats:[...state.chats, payload]}
-        }
-        case(REMOVE_CHAT):{
-            return {...state, chats:state.chats.filter(chat => ! payload)}
-        }
+        // case(ADD_CHAT):{
+        //     return {...state, chats:[...state.chats, payload]}
+        // }
+        // case(REMOVE_CHAT):{
+        //     return {...state, chats:state.chats.filter(chat => chat.id !== payload)}
+        // }
     }
 
     return state

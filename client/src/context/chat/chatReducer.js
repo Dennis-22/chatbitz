@@ -34,7 +34,7 @@ const state = {
    currentChat:"", // id of user's current chat
    messages:[
     // {
-    //     chatId:'1',
+    //     chatId:'2',
     //     messages:[
     //         {id:'6101', userId:'21', username:'Jessica', message:'Hello everyone', time:'10:30', accentColor:"rgb(38, 40, 170)"},
     //         {id:'104', userId:'join', username:'Cynthia', message:'Cynthia Joined', time:'10:30'},

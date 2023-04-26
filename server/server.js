@@ -227,41 +227,38 @@ io.on(CONNECTION, (socket)=>{
     // get username and id from user
 
     // creating a chat
-    socket.on(CREATE_CHAT, (chatDetails)=>{
-        socket.join(chatDetails.id)
-
-        // get username, id and chat and add store in socket array
-        let user = chatDetails.members[0] //creator/admin will be the only user
-        let userSocket = createUserSocket(socket.id, user.id, user.username, [chatDetails.id])
+    socket.on(CREATE_CHAT, (createChatDetails)=>{
+        const {chatId, userId, username} = createChatDetails
+        
+        socket.join(chatId)
+        
+        // add chatId and user info to user socket
+        let userSocket = createUserSocket(socket.id, userId, username, [chatId])
         sockets = addUserToSockets(sockets, userSocket)
-      
-        // console.log(chatDetails.chatName, 'created')
     })
 
     // joining a chat
     socket.on(JOIN_CHAT, (chatIdAndUserDetails)=>{
-        const {id, userId, username, accentColor} = chatIdAndUserDetails
-        socket.join(id)
+        const {chatId, userId, username, accentColor} = chatIdAndUserDetails
+        socket.join(chatId)
         
-        // add user to socket
-        let userSocket = createUserSocket(socket.id, userId, username, [id])
+        // // add user to socket
+        let userSocket = createUserSocket(socket.id, userId, username, [chatId])
         sockets = addUserToSockets(sockets, userSocket)
 
         // emit a joined message and add to the chat messages
-        let joinMsg = createMessage(id, 'join', username, `${username} joined`, accentColor)
+        let joinMsg = createMessage(chatId, 'join', username, `${username} joined`, accentColor)
         conversations = addMessageToConversation(conversations, joinMsg)
+        
         // emit to other users someone joined with new user data
-
         let newUser = {username, id:userId,  profilePhoto:null, accentColor, admin:false}
-        socket.to(id).emit(SOMEONE_JOINED, {joinMsg, id, newUser})
-        // console.log('joining', chatIdAndUserDetails)
-        console.log(`${username} joined ${id}`)
+        socket.to(chatId).emit(SOMEONE_JOINED, {joinMsg, id: chatId, newUser})
     })
 
     socket.on(LEAVE_CHAT, (chatIdAndUserDetails)=>{
         const {id, username, userId} = chatIdAndUserDetails
         // remove user from chat
-        // remove from sockets
+        // remove chatId from user socket
         // send message and emit to other members
 
         chats = removeMemberFromChat(chats, id, userId)
