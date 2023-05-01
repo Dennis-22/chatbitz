@@ -14,7 +14,7 @@ export default function LeaveChatModal() {
   const navigation = useNavigate()
 
   const handleLeave = ()=>{
-    let leaveProps = {id:currentChat, userId:user.id, username:user.username}
+    let leaveProps = {chatId:currentChat, userId:user.id, username:user.username}
     socket?.emit(socketConstance.LEAVE_CHAT, leaveProps)
     chatDispatch({type:chatActions.LEAVE_CHAT, payload:currentChat})
     navigation('/connect', {state:{connectType:_Connect.create}})

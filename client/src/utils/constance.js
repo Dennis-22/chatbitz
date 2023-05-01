@@ -8,7 +8,6 @@ const api = {
     joinChat: `${ENDPOINT}/api/join-chat`,
     getUserChats: `${ENDPOINT}/api/get-user-chats`,
     getChatMessages: `${ENDPOINT}/api/get-chat-messages`,
-    removeUser: `${ENDPOINT}/api/chat/remove-user/query`
 }
 
 // ids of messages neither user nor participants 

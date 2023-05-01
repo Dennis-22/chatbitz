@@ -40,7 +40,7 @@ function PlaygroundContent({connectType, connectChatId}){
     const navigate = useNavigate()
 
 
-    // console.log('reduce chats', chats)
+    console.log('reduce chats', chats)
     // console.log('reduce chats', messages)
 
     // create or join a chat based on user activity on the connect page

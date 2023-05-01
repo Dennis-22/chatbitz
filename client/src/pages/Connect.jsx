@@ -13,7 +13,6 @@ import { userActions, chatActions } from "../utils/actions";
 const {create, join} = _Connect
 
 const createInputs = {
-    username:"", 
     chatName:"",
     secured:{
         status:false,
@@ -22,7 +21,6 @@ const createInputs = {
 }
 
 const joinInputs = {
-    username:"", 
     chatName:"",
     secured:{
         status:false,
@@ -34,15 +32,16 @@ export default function Connect(){
     const {userDispatch, userState:{user, chats}} = useUserContext()
     const {chatState, chatDispatch, socket, connectToServer} = useChatContext()
     const [connect, setConnect] = useState(useLocation()?.state?.connectType || create)
-    const [connectDetails, setConnectDetails] = useState(null)
+    const [connectDetails, setConnectDetails] = useState(null) //createInputs or joinInputs
     const [process, setProcess] = useState({loading:false, error:""})
     const navigate = useNavigate()
     // console.log('chats', chats)
     // console.log('user chats', chatState.chats)
     // console.log('crrent chat', chatState.currentChat)
     // console.log('chat messages', chatState.messages)
-    console.log(user)
 
+    const username = user.username
+    // console.log({username})
     
     const handleCreateChat = async(e)=>{
         e.preventDefault()
@@ -52,9 +51,13 @@ export default function Connect(){
         
         setProcess({loading:true, error:""})
         try {
+        
             let serverData = {...user, ...connectDetails}
+            
             let results = await requestMaker('POST', api.createChat, serverData)
             let {success, data, message} = results
+
+            console.log(results)
             
             if(success === false){
                 return setProcess({loading:false, error:message})
@@ -86,45 +89,47 @@ export default function Connect(){
                 chatName:connectDetails.chatName,
             }
 
-            // chat is password protected so add password to the form data
-            if(connectDetails.secured.status){
-                serverData = {...serverData, password:connectDetails.secured.password}
-            }
+            console.log({serverData})
 
-            setProcess({loading:true, error:""})
+            // // chat is password protected so add password to the form data
+            // if(connectDetails.secured.status){
+            //     serverData = {...serverData, password:connectDetails.secured.password}
+            // }
+
+            // setProcess({loading:true, error:""})
     
-            let request = await requestMaker('POST', api.joinChat , serverData)
+            // let request = await requestMaker('POST', api.joinChat , serverData)
             
-            const {success, message} = request
+            // const {success, message} = request
 
-            // user successfully joins
-            if(success === true){
-                const {data:{chatDetails, chatMessages}} = request
-                // add chat user chats
-                userDispatch({type:userActions.ADD_CHAT, payload:chatDetails.id})
-                // set user current chat to the chat 
-                chatDispatch({
-                    type:chatActions.ADD_CHAT, 
-                    payload:{chat:chatDetails, messages:chatMessages}
-                })
+            // // user successfully joins
+            // if(success === true){
+            //     const {data:{chatDetails, chatMessages}} = request
+            //     // add chat user chats
+            //     userDispatch({type:userActions.ADD_CHAT, payload:chatDetails.id})
+            //     // set user current chat to the chat 
+            //     chatDispatch({
+            //         type:chatActions.ADD_CHAT, 
+            //         payload:{chat:chatDetails, messages:chatMessages}
+            //     })
 
-                setProcess({loading:false, error:""})
-                // connect to socket and navigate to playground
-                if(!socket) await connectToServer()
-                navigate('/playground', {state:{connectType:join, chatId:chatDetails.id}})
+            //     setProcess({loading:false, error:""})
+            //     // connect to socket and navigate to playground
+            //     if(!socket) await connectToServer()
+            //     navigate('/playground', {state:{connectType:join, chatId:chatDetails.id}})
                 
-            }else{
+            // }else{
 
-                if(message === "Provide password"){
-                    setProcess({loading:false, error:"Provide password to join"})
-                    // make password input visible
-                    return setConnectDetails({...connectDetails, secured:{status:true, password:""}})
-                }
+            //     if(message === "Provide password"){
+            //         setProcess({loading:false, error:"Provide password to join"})
+            //         // make password input visible
+            //         return setConnectDetails({...connectDetails, secured:{status:true, password:""}})
+            //     }
 
-                if(message === "Invalid password"){
-                    return setProcess({loading:false, error:"Invalid password"})
-                }
-            }
+            //     if(message === "Invalid password"){
+            //         return setProcess({loading:false, error:"Invalid password"})
+            //     }
+            // }
             setProcess({loading:false, error:"An error occurred please try again later"})
         } catch (error) {
             console.log(error)
