@@ -49,8 +49,7 @@ export default function Connect(){
         // connect to the server
         // set username in reducer to the newly typed name
         // navigate to playground
-
-        // chatName, username, id, secured, accentColor, profilePhoto
+        
         setProcess({loading:true, error:""})
         try {
             let serverData = {...user, ...connectDetails}

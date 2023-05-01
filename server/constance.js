@@ -9,8 +9,8 @@ const socketConstance = {
     LEAVE_CHAT: 'leave chat',
     SOMEONE_LEFT:   'someone left',
 
-    REMOVE_USER:'remove-user',
-    REMOVE_USER_FAILED:'remove-user-failed',
+    REMOVE_MEMBER:'remove-member',
+    REMOVE_MEMBER_FAILED:'remove-member-failed',
     SOMEONE_WAS_REMOVED:'someone-were-removed',
     I_WAS_REMOVED:'i-was-removed',
 

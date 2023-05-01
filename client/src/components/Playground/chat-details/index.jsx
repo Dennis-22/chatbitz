@@ -6,10 +6,12 @@ import styles from '../../../css/chat-details.module.css'
 import Modal from '../../global/Modal'
 import ProfilePhoto from '../../global/ProfilePhoto'
 import { useUserContext, useChatContext, usePlaygroundContext } from '../../../utils/hooks'
+import { api, socketConstance } from '../../../utils/constance';
+
 
 export default function ChatDetails(){
     const {userState:{user}} = useUserContext()
-    const {chatState:{chats, currentChat, messages}} = useChatContext()
+    const {socket, chatState:{chats, currentChat, messages}} = useChatContext()
     const {toggleChatDetails} = usePlaygroundContext()
     const chat = chats.find(chat => chat.id === currentChat)
     const {chatName, members} = chat
@@ -21,6 +23,24 @@ export default function ChatDetails(){
     // check if user is an admin of a chat
     const canUserRemoveOtherUser = ()=> chat.members.find(mem => mem.id === user.id)?.admin || false
 
+    const handleRemoveUser = async(removeUserId)=>{
+        // let request = await requestMaker("DELETE", 
+        // `${api.removeUser}?chatId=${currentChat}&adminId=${user.id}&userId=${removeUserId}`)
+
+        // console.log(request)
+        // when user has no chat at the backend
+        // if(request.error){
+        //     return setProcess({loading:false, errorText:request.message})
+        // }
+        // const {chatId, adminId, adminName, userId} = props
+        let props = {
+            chatId:currentChat, 
+            adminId:user.id, 
+            adminName:user.username, 
+            userId:removeUserId
+        }
+        socket?.emit(socketConstance.REMOVE_MEMBER, props)
+    }
 
     return <Modal>
         <div className={styles.body}>
@@ -49,6 +69,7 @@ export default function ChatDetails(){
                             key={idx} 
                             getUserMessagesCount={getUserMessagesCount}
                             canUserRemoveOtherUser={canUserRemoveOtherUser}
+                            handleRemoveUser={handleRemoveUser}
                         />
                     ))}
                 </div>
@@ -58,13 +79,15 @@ export default function ChatDetails(){
 }
 
 function Member(props){
-    const {admin, id, username, accentColor, getUserMessagesCount, canUserRemoveOtherUser} = props
+    const {admin, id, username, accentColor, getUserMessagesCount, canUserRemoveOtherUser, handleRemoveUser} = props
     const [openUtils, setOpenUtils] = useState(false)
-    
+   
     const handlePress = ()=>{
-        if(canUserRemoveOtherUser(id)) return setOpenUtils(!openUtils)
-        return null
+        // if(canUserRemoveOtherUser(id)) return setOpenUtils(!openUtils)
+        // return null
+        setOpenUtils(!openUtils)
     }
+
 
     return <div className={styles.member}>
         <div onClick={handlePress} className={styles.memberDetails}>
@@ -74,7 +97,13 @@ function Member(props){
         
         {
             openUtils && <div className={styles.memberUtils}>
-                <Button variant="contained">Remove {username}</Button>
+               
+               <Button 
+                        variant="contained" 
+                        onClick={()=> handleRemoveUser(id)}
+                    >
+                        Remove {username}
+                    </Button>
             </div>
         }
   

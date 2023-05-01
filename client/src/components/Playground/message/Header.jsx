@@ -56,8 +56,8 @@ export default function Header() {
 
           {
             peopleTyping.length > 0 && <p className={styles.typing}>
-                {peopleTyping.map((name, index) => <span className={name} key={index}>
-                    {index+1 < peopleTyping.length ? `${name}, ` : `${name} ` }
+                {peopleTyping.map((person, index) => <span key={index}>
+                    {index+1 < peopleTyping.length ? `${person.username},` : `${person.username} ` }
                     </span>
                 )}
                 {peopleTyping.length > 1 ? 'are' : 'is'} typing

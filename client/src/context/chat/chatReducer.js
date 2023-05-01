@@ -1,6 +1,6 @@
 import { chatActions } from "../../utils/actions"
-const {SET_CURRENT_CHAT, ADD_CHAT, LEAVE_CHAT, ADD_MEMBER_TO_CHAT, 
-    REMOVE_MEMBER_FROM_CHAT, ADD_MESSAGE} = chatActions
+const {SET_CURRENT_CHAT, AUTO_SET_CURRENT_CHAT, ADD_CHAT, LEAVE_CHAT, ADD_MEMBER_TO_CHAT, 
+    REMOVE_MEMBER_FROM_CHAT, ADD_MESSAGE, SOMEONE_TYPING, NO_CHAT_FN} = chatActions
 
 const state = {
    chats:[
@@ -8,20 +8,20 @@ const state = {
     // members:[
     //     {id:'21', username: 'Jessica', admin:true, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},
     //     {id:'2', username: 'Lucy', admin:false, profilePhoto:'', accentColor:"rgb(89, 141, 29)"}, 
-    //     {id:'21', username: 'Jessica', admin:true, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},
-    //     {id:'2', username: 'Lucy', admin:false, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},  
-    //     {id:'21', username: 'Jessica', admin:true, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},
-    //     {id:'2', username: 'Lucy', admin:false, profilePhoto:'', accentColor:"rgb(89, 141, 29)"}, 
-    //     {id:'21', username: 'Jessica', admin:true, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},
-    //     {id:'2', username: 'Lucy', admin:false, profilePhoto:'', accentColor:"rgb(89, 141, 29)"}, 
-    //     {id:'21', username: 'Jessica', admin:true, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},
-    //     {id:'2', username: 'Lucy', admin:false, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},    
-    //     {id:'21', username: 'Jessica', admin:true, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},
-    //     {id:'2', username: 'Lucy', admin:false, profilePhoto:'', accentColor:"rgb(89, 141, 29)"}, 
-    //     {id:'21', username: 'Jessica', admin:true, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},
-    //     {id:'2', username: 'Lucy', admin:false, profilePhoto:'', accentColor:"rgb(89, 141, 29)"}, 
-    //     {id:'21', username: 'Jessica', admin:true, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},
-    //     {id:'2', username: 'Lucy', admin:false, profilePhoto:'', accentColor:"rgb(89, 141, 29)"}, 
+        // {id:'21', username: 'Jessica', admin:true, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},
+        // {id:'2', username: 'Lucy', admin:false, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},  
+        // {id:'21', username: 'Jessica', admin:true, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},
+        // {id:'2', username: 'Lucy', admin:false, profilePhoto:'', accentColor:"rgb(89, 141, 29)"}, 
+        // {id:'21', username: 'Jessica', admin:true, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},
+        // {id:'2', username: 'Lucy', admin:false, profilePhoto:'', accentColor:"rgb(89, 141, 29)"}, 
+        // {id:'21', username: 'Jessica', admin:true, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},
+        // {id:'2', username: 'Lucy', admin:false, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},    
+        // {id:'21', username: 'Jessica', admin:true, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},
+        // {id:'2', username: 'Lucy', admin:false, profilePhoto:'', accentColor:"rgb(89, 141, 29)"}, 
+        // {id:'21', username: 'Jessica', admin:true, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},
+        // {id:'2', username: 'Lucy', admin:false, profilePhoto:'', accentColor:"rgb(89, 141, 29)"}, 
+        // {id:'21', username: 'Jessica', admin:true, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},
+        // {id:'2', username: 'Lucy', admin:false, profilePhoto:'', accentColor:"rgb(89, 141, 29)"}, 
     // ]
     // },
     // {id:'2', coverPhoto:'', chatName:"Kitchen", secured:{status:false, password: 'canopy'},
@@ -44,7 +44,7 @@ const state = {
     //  },
   
    ], // all messages of user chats
-   peopleTyping:[] //names of people typing
+   peopleTyping:[], //names of people typing
 }
 
 function chatReducer(state, action){
@@ -53,6 +53,22 @@ function chatReducer(state, action){
         case(SET_CURRENT_CHAT):{
             return {...state, currentChat:payload}
         }
+        case(AUTO_SET_CURRENT_CHAT):{
+            // checks if user has more chats and set current chat to one of them or setNoChatFn to payload fn
+            const {ignoreChatId, noChatCallback} = payload
+            
+            let newUserChats= state.chats.filter(chat => chat.id !== ignoreChatId)
+            let newMessages = state.messages.filter(msg => msg.chatId !== ignoreChatId)
+        
+            if(newUserChats.length > 0){
+                // set current to one of the chats
+                return {...state, chats:newUserChats, messages:newMessages, currentChat:newUserChats[0].id}
+            }
+            
+            // user has no chats left
+            noChatCallback()
+            return {...state, chats:[], currentChat:"", messages:[], peopleTyping:[]}
+        }
         case(ADD_MESSAGE):{
             const {id, message} = payload
             delete message.chatId
@@ -60,7 +76,7 @@ function chatReducer(state, action){
                 if(msg.chatId === id) return {...msg, messages: [...msg.messages, message]}
                 return msg
             })
-            return {...state, messages:newMessages}
+            return {...state, messages:newMessages, peopleTyping:[]}
         }
         case(ADD_CHAT):{
             const {chat, messages} = payload
@@ -115,6 +131,19 @@ function chatReducer(state, action){
             })
 
             return {...state, chats:newChats, messages:newMessages}
+        }
+        case(SOMEONE_TYPING):{
+            const {chatId, userId, username} = payload
+            
+            // show some is typing only when the user is currently on the chat
+            if(chatId === state.currentChat){
+                // check if user is already in the typing
+                let userAlreadyInTyping = state.peopleTyping.find(user => user.id === userId)
+                if(!userAlreadyInTyping){
+                    return {...state, peopleTyping:[...state.peopleTyping, {username, id:userId}]}
+                }
+            }
+            return state
         }
     }
 

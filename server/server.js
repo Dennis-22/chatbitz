@@ -14,7 +14,7 @@ const {chatAlreadyExist, getChatName, getChatDetails, getChatById, isChatPasswor
 } = require('./helpers')
 
 const {CONNECTION, DISCONNECT, CREATE_CHAT, JOIN_CHAT, SOMEONE_JOINED,
-    LEAVE_CHAT, SOMEONE_LEFT, REMOVE_USER, SOMEONE_WAS_REMOVED, REMOVE_USER_FAILED,
+    LEAVE_CHAT, SOMEONE_LEFT, REMOVE_MEMBER, SOMEONE_WAS_REMOVED, I_WAS_REMOVED, REMOVE_MEMBER_FAILED,
     SEND_MESSAGE, RECEIVED_MESSAGE, TYPING, PERSON_IS_TYPING
 } = require('./constance')
 
@@ -213,9 +213,9 @@ app.patch('/api/leave-chat', (req,res)=>{
         chats = removeMemberFromChat(chats, chatId, id)
         let sendResults = chatId
         sendData(res, 200, sendResults, "Chat left successfully")
-     } catch (error) {
-         sendError(res, error, 404, "Failed to leave chat")
-     }
+    } catch (error) {
+        sendError(res, error, 404, "Failed to leave chat")
+    }
 })
 
 
@@ -282,30 +282,32 @@ io.on(CONNECTION, (socket)=>{
         }
     })
 
-    socket.on(REMOVE_USER, (props)=>{
-        // check if admin is truly an admin cos the client cant be trusted 
-        // remove user from chat
-        // remove from sockets
-        // send message to other users
-        const {chatId, adminName, adminId, userId} = props
+    socket.on(REMOVE_MEMBER, (props)=>{
+        // check if user is an admin before they can remove a member
+        // this sends message to other users that a user has been removed
+        const {chatId, adminId, adminName, userId} = props
+
+        // check if user is an admin
         let isAdmin = isMemberAdmin(chats, chatId, adminId)
+        // if(!isAdmin) return io.to(chatId).emit(REMOVE_MEMBER_FAILED, adminId)
+
+        let userRemovedName = getUserNameById(chats, chatId, userId) // get the name of the user being removed
+        chats = removeMemberFromChat(chats, chatId, userId) //remove user from the chat
+
+        // remove chat from userSocket
+        sockets = removeChatFromUserSocket(sockets, userId, chatId)
+
+        // create a message for other members in the chat  
+        let userRemovedMsg = createMessage(chatId, 'user-removed', userRemovedName, `${adminName} removed ${userRemovedName}`, null)
+        conversations = addMessageToConversation(conversations, userRemovedMsg)
         
-        if(!isAdmin) socket.emit(REMOVE_USER_FAILED, {msg: 'You are not an admin', notAdminId:adminId})
-        else{
-            let userRemovedName = getUserNameById(chats, chatId, userId) // get the name of the user being removed
-            chats = removeMemberFromChat(chats, chatId, userId)
+        // send to every one in the chat including the admin
+        io.to(chatId).emit(SOMEONE_WAS_REMOVED, {userId, chatId, message:userRemovedMsg})
+    })
 
-            // remove chat from userSocket
-            sockets = removeChatFromUserSocket(sockets, userId, chatId)
-
-            // socket.leave(chatId)
-            // create a message for other members in the chat  
-            let userRemovedMsg = createMessage(chatId, 'user-removed', userRemovedName, `${adminName} removed ${userRemovedName}`, null)
-            conversations = addMessageToConversation(conversations, userRemovedMsg)
-            
-            // send to every one in the chat including the admin
-            io.to(chatId).emit(SOMEONE_WAS_REMOVED, {userId, chatId, message:userRemovedMsg})
-        }
+    // the person removed from a chat emits this socket to disconnect form socket 
+    socket.on(I_WAS_REMOVED, (chatId)=>{
+        socket.leave(chatId)
     })
 
     socket.on(SEND_MESSAGE, (msgDetails)=>{
@@ -316,9 +318,9 @@ io.on(CONNECTION, (socket)=>{
         socket.to(chatId).emit(RECEIVED_MESSAGE, newMessage)
     })
 
-    socket.on(TYPING, (chatIdAndUsername)=>{
-        const {id} = chatIdAndUsername
-        socket.to(id).emit(PERSON_IS_TYPING, chatIdAndUsername)
+    socket.on(TYPING, (typingDetails)=>{
+        const {chatId} = typingDetails
+        socket.to(chatId).emit(PERSON_IS_TYPING, typingDetails)
     })
 
     socket.on(DISCONNECT, ()=>{

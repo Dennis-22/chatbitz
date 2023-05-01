@@ -1,6 +1,7 @@
 .body{
     background-color: var(--background-color);
-    width: 80%;
+    width: 95%;
+    max-width: 650px;
     height: 90%;
     border-radius: 5px;
     padding: 20px;
@@ -76,8 +77,4 @@
 
 .memberUtils{
     margin-top: 20px;
-}
-
-@media screen and (max-width: 768px){
-    .body{width:95%}
 }

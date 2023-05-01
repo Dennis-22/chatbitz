@@ -45,7 +45,7 @@ async function requestMaker(method, url, data){
     }
 
     if(method === 'DELETE'){
-        let results = await fetch(url, {
+        let request = await fetch(url, {
             method: 'DELETE',
             headers: {
                 'Accept': 'application/json',
@@ -54,8 +54,13 @@ async function requestMaker(method, url, data){
             body:JSON.stringify(data)
         });
 
-        let response = await results.json()
-        return response
+        
+        if(request.ok){
+            let response = await request.json()
+            return {error:false, data:response.data}
+        }
+        let errorMsg = await request.json() 
+        return {error:true, message:errorMsg.message}
     }
 }
 

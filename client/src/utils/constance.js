@@ -7,7 +7,8 @@ const api = {
     createChat: `${ENDPOINT}/api/create-chat`,
     joinChat: `${ENDPOINT}/api/join-chat`,
     getUserChats: `${ENDPOINT}/api/get-user-chats`,
-    getChatMessages: `${ENDPOINT}/api/get-chat-messages`
+    getChatMessages: `${ENDPOINT}/api/get-chat-messages`,
+    removeUser: `${ENDPOINT}/api/chat/remove-user/query`
 }
 
 // ids of messages neither user nor participants 
@@ -45,8 +46,8 @@ const socketConstance = {
     LEAVE_CHAT: 'leave chat',
     SOMEONE_LEFT:   'someone left',
 
-    REMOVE_USER:'remove-user',
-    REMOVE_USER_FAILED:'remove-user-failed',
+    REMOVE_MEMBER:'remove-member',
+    REMOVE_MEMBER_FAILED:'remove-member-failed',
     SOMEONE_WAS_REMOVED:'someone-were-removed',
     I_WAS_REMOVED:'i-was-removed',
 

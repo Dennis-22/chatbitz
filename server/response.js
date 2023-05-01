@@ -11,8 +11,8 @@ function sendData(res, statusCode, data, message){
 }
 
 //for sending confirmation messages
-function sendMessage(res, message){
-    res.status(200).json({success:true, message})
+function sendMessage(res, statusCode, message){
+    res.status(statusCode).json({success:true, message})
     return
 }
 

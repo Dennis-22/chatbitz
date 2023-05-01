@@ -12,12 +12,14 @@ import ChatDetails from '../components/Playground/chat-details'
 import RemovedModal from "../components/global/RemovedModal"
 import NotAnAdminModal from "../components/global/NotAnAdminModal"
 import { getItemFromStorage, requestMaker } from "../utils/helpers"
-import {screenSizes, socketConstance, ENDPOINT, api} from '../utils/constance'
+import {screenSizes, socketConstance, api} from '../utils/constance'
 import {_User, _Connect } from "../utils/types"
-import { userActions, chatActions } from "../utils/actions"
+import { userActions, chatActions, playgroundActions } from "../utils/actions"
 
 
-const {CREATE_CHAT, JOIN_CHAT, SOMEONE_JOINED, SOMEONE_LEFT, RECEIVED_MESSAGE} = socketConstance
+const {CREATE_CHAT, JOIN_CHAT, SOMEONE_JOINED, SOMEONE_LEFT, 
+    SOMEONE_WAS_REMOVED, I_WAS_REMOVED, REMOVE_MEMBER_FAILED,
+    PERSON_IS_TYPING, RECEIVED_MESSAGE} = socketConstance
 
 export default function Playground(){
     const connectType = useLocation()?.state?.connectType || null
@@ -31,26 +33,19 @@ export default function Playground(){
 function PlaygroundContent({connectType, connectChatId}){
     const {deviceWidth} = useAppContext()
     const {userDispatch, userState:{user}} = useUserContext()
-    const {chatDispatch, socket, setSocket, connectToServer, chatState:{chats, currentChat}} = useChatContext()
-    const {playState} = usePlaygroundContext()
+    const {chatDispatch, socket, chatState:{chats, currentChat}} = useChatContext()
+    const {playDispatch, playState, toggleNotAdmin, toggleYouWereRemoved} = usePlaygroundContext()
     const [process, setProcess] = useState({loading:!currentChat, errorText:""})
     const {showMobileChats, showLeaveChat, showChatDetails, showNotAdmin, showYouWereRemoved} = playState
     const navigate = useNavigate()
 
 
-    // console.log('reduce chats', currentChat)
+    // console.log('reduce chats', chats)
     // console.log('reduce chats', messages)
 
     // create or join a chat based on user activity on the connect page
     // this is called in getUserChatsfn
     const connectUser = async()=>{
-        // if socket is not successfully connected to the backend
-        // let tempSocket = null
-        // if(!socket){
-        //     tempSocket = await io.connect(ENDPOINT)
-        //     setSocket(tempSocket)
-        // }   
-
         if(connectType === _Connect.create){
             const createChatDetails = {
                 chatId:connectChatId, 
@@ -74,9 +69,11 @@ function PlaygroundContent({connectType, connectChatId}){
             return
         }
 
-        // below only runs when user has refreshed the page
+        //code below is expected to run only when user has refresh the page
+
+        // TODO::
         // check user chats and for each, socket join them
-        console.log('check user chats and socket join them')
+        // console.log('check user chats and socket join them')
         // connect to server
         // create a new socket.join and server for only refreshed joining so it does not alert other users
     }
@@ -95,6 +92,7 @@ function PlaygroundContent({connectType, connectChatId}){
         }
 
         // there is no chat but userId is present request user chats from the backend
+        // helpful when user refreshes on the browser
         if(chats.length === 0 && user.id){
             // request the user chats from the server
             setProcess({loading:true, errorText:""})
@@ -125,7 +123,6 @@ function PlaygroundContent({connectType, connectChatId}){
         setProcess({loading:false, errorText:""})
     }
 
-
     // check if user has necessary data to be on this page
     const configureUser = ()=>{
         if(user.username === ""){
@@ -142,27 +139,77 @@ function PlaygroundContent({connectType, connectChatId}){
         getUserChats()
     }
 
+    
+ 
+    // when user switches chat, this fn runs to see if user is still part of the chat
+    // helpful when user is removed from a chat which is not the current chat
+    useEffect(()=>{
+        let isUserStillAMember = chats.find(chat => chat.id === currentChat)
+        .members.some(mem => mem.id === user.id)
+
+        if(!isUserStillAMember)toggleYouWereRemoved(true)
+        
+    },[currentChat])
 
     useEffect(()=>{
         configureUser()
     },[])
 
+
     useEffect(()=>{
-        if(socket){
-            socket?.on(SOMEONE_JOINED, (data) =>{
-                const {id, newUser, joinMsg} = data
-                chatDispatch({type:chatActions.ADD_MEMBER_TO_CHAT, payload:{id, newUser, joinMsg}})
-            })
+        
+        socket?.on(SOMEONE_JOINED, (data) =>{
+            const {id, newUser, joinMsg} = data
+            chatDispatch({type:chatActions.ADD_MEMBER_TO_CHAT, payload:{id, newUser, joinMsg}})
+        })
 
-            socket?.on(SOMEONE_LEFT, (data)=>{
-                const {leaveMsg, id, userId} = data
-                chatDispatch({type:chatActions.REMOVE_MEMBER_FROM_CHAT, payload:{id, userId, leaveMsg}})
-            })
+        socket?.on(SOMEONE_LEFT, (data)=>{
+            const {leaveMsg, id, userId} = data
+            chatDispatch({type:chatActions.REMOVE_MEMBER_FROM_CHAT, payload:{id, userId, leaveMsg}})
+        })
 
-            socket?.on(RECEIVED_MESSAGE, (message)=>{
-                chatDispatch({type:chatActions.ADD_MESSAGE, payload:{id:message.chatId, message}})
-            })
-        }
+        socket?.on(SOMEONE_WAS_REMOVED, (data)=>{
+            const {userId, chatId, message} = data
+            // check if user was removed and show the removed popup otherwise remove the removed user from store
+            if(userId === user.id){
+                // emit to the backend to disconnect from the chatId socket
+                socket?.emit(I_WAS_REMOVED, chatId)
+                
+                if(chatId === currentChat){
+                    // if user is on the chat, show the removed modal
+                    playDispatch({type:playgroundActions.SHOW_YOU_WERE_REMOVED, payload:true})
+                }else{
+                    // leave the chat
+                    // when user later set the chat, the useEffect which checks if user is still ...
+                    // a member of a chat will handle the modal showing
+                    chatDispatch({
+                        type:chatActions.REMOVE_MEMBER_FROM_CHAT, 
+                        payload:{id:chatId, userId, leaveMsg:message}
+                    }) //remove user from the chat
+                }
+
+
+            }else{ //someone else was removed.
+                // update the store to remove that member from the chat
+                chatDispatch({type:chatActions.REMOVE_MEMBER_FROM_CHAT, payload:{id:chatId, userId, leaveMsg:message}})
+            }
+        })
+
+        socket?.on(REMOVE_MEMBER_FAILED, (userId)=>{
+            if(userId === user.id){
+                toggleNotAdmin(true)
+            }
+        })
+
+        socket?.on(PERSON_IS_TYPING, (data)=>{
+            const {chatId, username, userId} = data
+            chatDispatch({type:chatActions.SOMEONE_TYPING, payload:{chatId, userId, username}})
+        })
+
+        socket?.on(RECEIVED_MESSAGE, (message)=>{
+            chatDispatch({type:chatActions.ADD_MESSAGE, payload:{id:message.chatId, message}})
+        })
+        
 
     },[socket])
 
@@ -173,13 +220,7 @@ function PlaygroundContent({connectType, connectChatId}){
     return <>
         <div className={styles.playground}>
             {deviceWidth >= screenSizes.small && <LargeScreenChats />}
-            <Message />
-
-            {/* <button onClick={()=> chatDispatch({
-                type:chatActions.REMOVE_MEMBER_FROM_CHAT, 
-                payload:{id:'2', userId:'21', leaveMsg:'left'}})}>
-                Play
-            </button> */}
+            <Message />  
         </div>
 
         {/* the lower ones gets higher z index */}

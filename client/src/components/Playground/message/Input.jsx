@@ -21,7 +21,7 @@ export default function Input() {
 
   const handleChange = (e)=>{
     setMessage(e.target.value)
-    // socket?.emit(socketConstance.TYPING, {id:currentChat.id, username:user.username})
+    socket?.emit(socketConstance.TYPING, {chatId:currentChat, userId:user.id, username:user.username})
   }
 
 
