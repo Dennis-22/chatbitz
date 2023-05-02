@@ -6,7 +6,7 @@ import styles from '../../../css/chat-details.module.css'
 import Modal from '../../global/Modal'
 import ProfilePhoto from '../../global/ProfilePhoto'
 import { useUserContext, useChatContext, usePlaygroundContext } from '../../../utils/hooks'
-import { api, socketConstance } from '../../../utils/constance';
+import { socketConstance } from '../../../utils/constance';
 
 
 export default function ChatDetails(){
@@ -24,15 +24,6 @@ export default function ChatDetails(){
     const canUserRemoveOtherUser = ()=> chat.members.find(mem => mem.id === user.id)?.admin || false
 
     const handleRemoveUser = async(removeUserId)=>{
-        // let request = await requestMaker("DELETE", 
-        // `${api.removeUser}?chatId=${currentChat}&adminId=${user.id}&userId=${removeUserId}`)
-
-        // console.log(request)
-        // when user has no chat at the backend
-        // if(request.error){
-        //     return setProcess({loading:false, errorText:request.message})
-        // }
-        // const {chatId, adminId, adminName, userId} = props
         let props = {
             chatId:currentChat, 
             adminId:user.id, 

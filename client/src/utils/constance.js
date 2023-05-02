@@ -1,14 +1,5 @@
 const screenSizes = {large: 1000, small: 770}
 
-const ENDPOINT = 'http://localhost:4000'
-// const ENDPOINT = 'https://chatbitz-server.onrender.com'
-
-const api = {
-    createChat: `${ENDPOINT}/api/create-chat`,
-    joinChat: `${ENDPOINT}/api/join-chat`,
-    getUserChats: `${ENDPOINT}/api/get-user-chats`,
-    getChatMessages: `${ENDPOINT}/api/get-chat-messages`,
-}
 
 // ids of messages neither user nor participants 
 const defMsgsIds = ['left', 'join', 'user-removed']
@@ -58,4 +49,4 @@ const socketConstance = {
 }
 
 
-export {screenSizes, accentColors, ENDPOINT, api, defMsgsIds, socketConstance, charsAllowed}
+export {screenSizes, accentColors, defMsgsIds, socketConstance, charsAllowed}

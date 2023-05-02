@@ -11,11 +11,11 @@ import LeaveChatModal from '../components/global/LeaveChatModal'
 import ChatDetails from '../components/Playground/chat-details'
 import RemovedModal from "../components/global/RemovedModal"
 import NotAnAdminModal from "../components/global/NotAnAdminModal"
-import { getItemFromStorage, requestMaker } from "../utils/helpers"
-import {screenSizes, socketConstance, api} from '../utils/constance'
-import {_User, _Connect } from "../utils/types"
 import { userActions, chatActions, playgroundActions } from "../utils/actions"
-
+import { getApiErrorResponse, getItemFromStorage} from "../utils/helpers"
+import {screenSizes, socketConstance} from '../utils/constance'
+import {_User, _Connect } from "../utils/types"
+import { getUserChatsRoute } from "../utils/api"
 
 const {CREATE_CHAT, JOIN_CHAT, SOMEONE_JOINED, SOMEONE_LEFT, 
     SOMEONE_WAS_REMOVED, I_WAS_REMOVED, REMOVE_MEMBER_FAILED,
@@ -39,8 +39,6 @@ function PlaygroundContent({connectType, connectChatId}){
     const {showMobileChats, showLeaveChat, showChatDetails, showNotAdmin, showYouWereRemoved} = playState
     const navigate = useNavigate()
 
-
-    console.log('reduce chats', chats)
     // console.log('reduce chats', messages)
 
     // create or join a chat based on user activity on the connect page
@@ -94,34 +92,43 @@ function PlaygroundContent({connectType, connectChatId}){
         // there is no chat but userId is present request user chats from the backend
         // helpful when user refreshes on the browser
         if(chats.length === 0 && user.id){
+
             // request the user chats from the server
             setProcess({loading:true, errorText:""})
-            let request = await requestMaker("GET", `${api.getUserChats}/${user.id}`)
 
-            // when user has no chat at the backend
-            if(request.error){
-                return setProcess({loading:false, errorText:request.message})
-            }
-    
-            // no error encountered
-            // set user chats from the results from the server
-            let {chats:userChats, messages} = request.data
-    
-            // add chats to user chats
-            for(let chat of userChats){
-                // get chat messages
-                let chatMessages = messages.find(msg => msg.chatId === chat.id).messages
-                chatDispatch({type:chatActions.ADD_CHAT, payload:{chat, messages:chatMessages}})
-            }
-            // set current chat to the first chat if userChats is more than one
-            if(userChats.length > 1){
-                chatDispatch({type:chatActions.SET_CURRENT_CHAT, payload:userChats[0].id})
-            }
+            try {
+                const {status, data:{data}} = await getUserChatsRoute(user.id)
+
+                // when user has no chat at the backend
+                if(status === 204) return navigate("/connect", {state: {connectType:_Connect.join}})
+                
+                // no error encountered
+                // set user chats from the results from the server
+                let {chats:userChats, messages} = data
+
+                // add chats to user chats
+                for(let chat of userChats){
+                    // get chat messages
+                    let chatMessages = messages.find(msg => msg.chatId === chat.id).messages
+                    chatDispatch({type:chatActions.ADD_CHAT, payload:{chat, messages:chatMessages}})
+                }
+                // set current chat to the first chat if userChats is more than one
+                if(userChats.length > 1){
+                    chatDispatch({type:chatActions.SET_CURRENT_CHAT, payload:userChats[0].id})
+                }
+
+                connectUser()
+                setProcess({loading:false, errorText:""})
+            } catch (error) {
+                let errorMsg = getApiErrorResponse(error)
+                setProcess({loading:false, errorText:errorMsg})
+            }        
         }
 
         connectUser()
         setProcess({loading:false, errorText:""})
     }
+
 
     // check if user has necessary data to be on this page
     const configureUser = ()=>{
@@ -139,7 +146,6 @@ function PlaygroundContent({connectType, connectChatId}){
         getUserChats()
     }
 
-    
  
     // when user switches chat, this fn runs to see if user is still part of the chat
     // helpful when user is removed from a chat which is not the current chat
@@ -151,13 +157,13 @@ function PlaygroundContent({connectType, connectChatId}){
         
     },[currentChat])
 
+
     useEffect(()=>{
         configureUser()
     },[])
 
 
     useEffect(()=>{
-        
         socket?.on(SOMEONE_JOINED, (data) =>{
             const {id, newUser, joinMsg} = data
             chatDispatch({type:chatActions.ADD_MEMBER_TO_CHAT, payload:{id, newUser, joinMsg}})
@@ -196,9 +202,7 @@ function PlaygroundContent({connectType, connectChatId}){
         })
 
         socket?.on(REMOVE_MEMBER_FAILED, (userId)=>{
-            if(userId === user.id){
-                toggleNotAdmin(true)
-            }
+            if(userId === user.id) toggleNotAdmin(true)
         })
 
         socket?.on(PERSON_IS_TYPING, (data)=>{
@@ -222,6 +226,7 @@ function PlaygroundContent({connectType, connectChatId}){
             {deviceWidth >= screenSizes.small && <LargeScreenChats />}
             <Message />  
         </div>
+
 
         {/* the lower ones gets higher z index */}
         {showLeaveChat && <LeaveChatModal />}

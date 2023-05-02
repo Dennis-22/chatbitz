@@ -9,13 +9,9 @@ import { userActions } from '../../utils/actions';
 
 export default function Form(props){
     const {userDispatch, userState:{user}} = useUserContext()
-    const {process, setProcess, connect, connectDetails, setConnectDetails, handleCreateChat, handleJoinChat} = props
+    const {process, connect, connectDetails, setConnectDetails, handleCreateChat, handleJoinChat} = props
     const {error} = process
 
-    // const handleChange = (value, field)=>{
-    //     if(process.error) setProcess((cur) => ({...cur, error:""}))
-    //     setConnectDetails((cur) => ({...cur, [field]:value}))
-    // }
 
     return <div className={styles.formContainer}>
         
@@ -61,7 +57,6 @@ export default function Form(props){
                 <Button 
                     variant="contained" 
                     style={{width:'100%', marginTop:20}}
-                    // onClick={connect === create ? handleCreateChat : handleJoinChat}
                     type="submit"
                 >
                     {connect === _Connect.create ? "Create" : "Join"}
