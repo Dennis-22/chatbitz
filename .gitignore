@@ -1,2 +1,2 @@
-node_modules/
-.fleet
+*.node_modules/
+*.env

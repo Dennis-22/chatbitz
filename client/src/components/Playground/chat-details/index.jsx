@@ -15,13 +15,19 @@ export default function ChatDetails(){
     const {toggleChatDetails} = usePlaygroundContext()
     const chat = chats.find(chat => chat.id === currentChat)
     const {chatName, members} = chat
-
-    // console.log('ms', messages.find(msg => msg.chatId === currentChat))
-    const getUserMessagesCount = (userId)=> messages.find(msg => msg.chatId === currentChat)
-        .messages.filter(msg => msg.userId === userId).length
     
-    // check if user is an admin of a chat
-    const canUserRemoveOtherUser = ()=> chat.members.find(mem => mem.id === user.id)?.admin || false
+    // get the number of messages a member has sent
+    const getMemberMessagesCount = (userId)=> (messages.find(msg => msg.chatId === currentChat)
+        .messages.filter(msg => msg.userId === userId).length
+    )
+
+    // is user an admin of the chat
+    const isUserAnAdmin = () => members.find(mem => mem.id === user.id)?.admin || false
+    
+    const canUserRemoveOtherUser = (memberId)=>{
+        // if the member id is not the same as userId and the member is an admin
+        return memberId !== user.id && isUserAnAdmin()
+    }
 
     const handleRemoveUser = async(removeUserId)=>{
         let props = {
@@ -53,12 +59,13 @@ export default function ChatDetails(){
 
             <section className={styles.members}>
                 <p className={styles.membersMemCount}>{members.length} participants</p>
-                <p className={styles.adminMemText}>👌 Tap on a participant to remove them</p>
+                {isUserAnAdmin() && <p className={styles.adminMemText}>👌 Tap on a participant to remove them</p>}
                 <div className={styles.membersWrap}>
                     {members.map((mem, idx) => (<Member 
                             {...mem} 
-                            key={idx} 
-                            getUserMessagesCount={getUserMessagesCount}
+                            key={idx}
+                            userId={user.id}
+                            getMemberMessagesCount={getMemberMessagesCount}
                             canUserRemoveOtherUser={canUserRemoveOtherUser}
                             handleRemoveUser={handleRemoveUser}
                         />
@@ -70,20 +77,23 @@ export default function ChatDetails(){
 }
 
 function Member(props){
-    const {admin, id, username, accentColor, getUserMessagesCount, canUserRemoveOtherUser, handleRemoveUser} = props
+    const {admin, id, username, accentColor, userId, getMemberMessagesCount, canUserRemoveOtherUser, handleRemoveUser} = props
     const [openUtils, setOpenUtils] = useState(false)
    
     const handlePress = ()=>{
-        // if(canUserRemoveOtherUser(id)) return setOpenUtils(!openUtils)
-        // return null
-        setOpenUtils(!openUtils)
+        if(canUserRemoveOtherUser(id)) return setOpenUtils(!openUtils)
+        return null
     }
 
 
     return <div className={styles.member}>
         <div onClick={handlePress} className={styles.memberDetails}>
             <ProfilePhoto name={username} size={35} color={accentColor}/>
-            <p>{username} - <span className={styles.messagesSent}> {getUserMessagesCount(id)} 💌</span></p>
+            <p>{username} - 
+            <span className={styles.messagesSent}> {getMemberMessagesCount(id)} 💌</span>
+            {admin && <span> 👑</span>}
+            {id === userId && <span className={styles.you}>you</span>}
+        </p>
         </div>
         
         {

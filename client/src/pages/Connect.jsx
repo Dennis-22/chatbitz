@@ -9,6 +9,8 @@ import { _Connect } from "../utils/types"
 import { getApiErrorResponse } from "../utils/helpers";
 import { createChatRoute, joinChatRoute } from "../utils/api";
 import { chatActions } from "../utils/actions";
+import logo from '../assets/logo.svg'
+
 
 const {create, join} = _Connect
 
@@ -122,8 +124,10 @@ export default function Connect(){
     return <>    
         <div className={styles.body}>
             <div className={styles.wrapper}>
+                <img src={logo} className={styles.logo}/>
+
                 <h1 className={styles.title}>
-                    {`${connect === create ? "Create" : "Join"} a chat`}
+                    {`${connect === create ? "Create" : "Join"} A Chat`}
                 </h1>
 
                 <Form 
@@ -137,10 +141,7 @@ export default function Connect(){
                 />
 
             
-                <Button
-                    onClick={()=>setConnect((cur) => (cur === create ? join : create))}
-                    style={{marginLeft:300}} 
-                >
+                <Button onClick={()=>setConnect((cur) => (cur === create ? join : create))}>
                     {`${connect === create ? "Join" : "Create"} chat instead`}
                 </Button>
 

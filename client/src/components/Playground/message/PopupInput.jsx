@@ -11,7 +11,7 @@ export default function PopupInput({close, message, handleChange, handleSendMess
     <Modal>
       <div className={styles.container}>
         <div className={styles.head}>
-          <p>Type more stuff here</p>
+          <p className={styles.title}>Type more stuff here</p>
           <IconButton onClick={close}>
             <CloseRoundedIcon sx={{color:'rgb(143, 143, 143)'}}/>
           </IconButton>

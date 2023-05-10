@@ -4,7 +4,6 @@ const {SET_USER, EDIT_USER} = userActions
 
 const state = {
     user:_User,
-    // user:{id:'2', username:"Jessica", accentColor:"red", profilePhoto:""}
 }
 
 function userReducer(state, action){

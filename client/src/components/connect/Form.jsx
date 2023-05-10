@@ -25,13 +25,13 @@ export default function Form(props){
             <Input state={user.username} 
                 onChange={(value)=>userDispatch({type:userActions.EDIT_USER, payload:{username:value}})} 
                 label="Username" 
-                placeholder="Dennis Jeminal" 
+                placeholder="Enter your username" 
                 maxLength={charsAllowed.username}
             />
             <Input 
                 state={connectDetails.chatName} 
                 onChange={(value)=>setConnectDetails((cur) => ({...cur, chatName:value}))} 
-                label="Chat's Name" placeholder="Gen-z's Court" 
+                label="Chat's Name" placeholder="Enter the chat name" 
                 maxLength={charsAllowed.chatName}
             />
             
@@ -50,7 +50,7 @@ export default function Form(props){
                     state={connectDetails.secured.password} 
                     onChange={(value)=>setConnectDetails((cur) => ({...cur, secured:{...cur.secured, password:value}}))} 
                     label="Password for your chat" 
-                    placeholder="Use a secured password"
+                    placeholder="Enter a secured password"
                 />
             }
 

@@ -8,26 +8,6 @@ export default function Messages() {
   const messages = chatState.messages.find(msg=> msg.chatId === chatState.currentChat).messages
   const bottomRef = useRef(null);
 
-
-  // useEffect(() => {
-  //   // 👇️ simulate chat messages flowing in
-  //   setInterval(
-  //     () =>
-  //       setMessages(current => [
-  //         ...current,
-  //         {
-  //           message:'Lorem ipsum dolor sit amet consectetur, adipisicing elit. Porro, quaerat eum id obcaecati, magnam voluptatum dolorem sunt, omnis sed consectetur necessitatibus blanditiis ipsa? Cumque architecto, doloribus mollitia velit non sint!',
-  //           id:'123',
-  //           userId:'45',
-  //           accentColor:'pink',
-  //           username:'unknowwn',
-  //           time:'10:30'
-  //         }
-  //       ]),
-  //     1000,
-  //   );
-  // }, []);
-
   useEffect(() => {
     // 👇️ scroll to bottom every time messages change
     bottomRef.current?.scrollIntoView({behavior: 'smooth'});

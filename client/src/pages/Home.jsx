@@ -4,7 +4,7 @@ import IconButton from '@mui/material/IconButton';
 import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded';
 import KeyboardArrowUpRoundedIcon from '@mui/icons-material/KeyboardArrowUpRounded';
 import styles from  '../css/home.module.css'
-import logo from '../assets/logo.svg'
+import Logo from '../components/global/Logo';
 import { _Connect } from '../utils/types';
 
 const documentation = [
@@ -14,6 +14,7 @@ const documentation = [
             "You Create a chat by first providing the name of the chat.",
             "If the name you provide for your chat has already been taken, you must provide a new name.",
             "You provide your username. Your username is what other participants you are in a chat with sees.",
+            "A creator of a chat is called an admin",
             "Chats are by default public and anyone can join. To keep it private, secure the chat with a password. Only users with the password can join."
         ]
     },
@@ -39,6 +40,7 @@ const documentation = [
         text:[
             "No email, telephone or password required.",
             "You can leave and rejoin a chat when necessary.",
+            "An admin of a chat can remove any member in a chat",
             "Once you refresh your browser, you automatically leave your current chat",
             "Once the last person leaves the chat, the chat is automatically deleted",
             "All messages are deleted together the chat."
@@ -58,18 +60,15 @@ export default function Home(){
     return <div className={styles.home}>
          <header className={styles.header}>
             <nav className={styles.nav}>
-                <div className={styles.logoWrap}>
-                    <img src={logo} className={styles.logo}/>
-                    <p className={styles.title}>ChatBit</p>
-                </div>
-                <p className={styles.navEl} onClick={scrollToView}>Docs</p>
+                <Logo />
+                <p className={styles.navEl} onClick={scrollToView}>Usage</p>
             </nav>
         </header>
 
         <div className={styles.hero}>
             <section className={styles.heroSec}>
-                <h1 className={styles.heroText}>Meet. Talk. Plan.</h1>
-                <p className={styles.heroSubText}>Connect with anyone, anywhere with zero effort and no limitation.</p>
+                <h1 className={styles.heroText}>Meet. Chat. Plan.</h1>
+                <p className={styles.heroSubText}>Connect with anyone, anywhere with zero effort and no limitations.</p>
                 <button className={styles.heroBtn} onClick={()=>navigation('/connect', {state:{connectType:_Connect.create}})}>Start Chatting</button>
             </section>
         </div>
@@ -90,7 +89,7 @@ export default function Home(){
 
 function Documentation({docsRef}){
     return <div className={styles.documentation} ref={docsRef}>
-    <p className={styles.docTitle}>Docs</p>
+    <p className={styles.docTitle}>Usage</p>
 
     <div className={styles.docWrapper}>
         {documentation.map((doc, index) => <DocMaker {...doc} key={index}/>)}

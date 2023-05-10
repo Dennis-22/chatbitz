@@ -75,6 +75,15 @@
     color: var(--faint);
 }
 
+.you{
+    background-color: var(--glass);
+    padding: 5px 10px;
+    margin-left: 10px;
+    color: var(--faint);
+    border-radius: 5px;
+    border: 1px solid var(--background-color);
+}
+
 .memberUtils{
     margin-top: 20px;
 }

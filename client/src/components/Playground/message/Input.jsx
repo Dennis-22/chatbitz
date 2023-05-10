@@ -55,6 +55,7 @@ export default function Input() {
           <div className={styles.inputWrap}>
             <input
               value={message}
+              type='text'
               onChange={handleChange} 
               className={styles.textInput} 
               placeholder="Type a message"

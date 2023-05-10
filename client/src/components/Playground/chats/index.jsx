@@ -2,6 +2,7 @@ import { memo } from 'react'
 import styles from '../../../css/chats.module.css'
 import { useChatContext } from '../../../utils/hooks'
 import ProfilePhoto from '../../global/ProfilePhoto'
+import Logo from '../../global/Logo'
 import { usePlaygroundContext } from '../../../utils/hooks'
 import { chatActions } from '../../../utils/actions'
 
@@ -29,7 +30,9 @@ function Content(){
   const {chatDispatch, chatState:{chats, currentChat}} = useChatContext()
 
   return <>
-    <p className={styles.appName}>ChatBits</p>
+    <div className={styles.logoWrap}>
+      <Logo />
+    </div>
     <section className={styles.chatsDisplay}>
       <p className={styles.text}>Current chats</p>
       <div className={styles.chatsWrapper}>

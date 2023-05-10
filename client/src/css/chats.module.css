@@ -2,13 +2,18 @@
     width:27%;
 }
 
-.appName{
-    margin: 30px 10px;
-    color: var(--white-2);
-    font-size: var(--x-large);
+
+.logoWrap{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-top: 30px;
+    padding-bottom: 30px;
+    border-bottom: solid 1px var(--border-color);
 }
 
 .chatsDisplay{
+    margin-top: 30px;
     padding: 10px;
 
 }

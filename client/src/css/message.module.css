@@ -51,19 +51,27 @@
     margin-left: 10px;
 }
 
-.typing{
+.typingShow{
     color: var(--faint);
     font-size: var(--tiny);
     margin-top: 5px;
 }
 
-.personTyping{
-    color: yellow;
+.typingHide{
+    visibility: hidden;
 }
+
 
 /* Styles For Input */
 .inputContainer{
     position: relative;
+    background-color: var(--glass);
+    width: min(100%, 750px);
+    border-radius: 5px;
+    margin-left: auto;
+    margin-right: auto;
+    border: solid 2px var(--border-color);
+    box-shadow: var(--box-shadow-2)
 }
 
 .input{
@@ -74,8 +82,6 @@
 .inputWrap{
     flex: 1;
     display: flex;
-    background-color: var(--glass);
-    border-top: solid 1px var(--border-color);
     border-radius: 2px;
 }
 
@@ -90,7 +96,6 @@
 
 .inputUtils{
     width: 15%;
-    background-color: var(--background-color);
     display: flex;
     justify-content: space-around;
     align-items: center;

@@ -24,6 +24,9 @@
 
 .defMsg{
     align-self: center;
+    background-color: var(--background-color);
+    border-radius: 5px;
+    padding: 10px 20px;
 }
 
 .pMsg{

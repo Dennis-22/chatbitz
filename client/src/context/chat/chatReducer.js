@@ -1,50 +1,12 @@
 import { chatActions } from "../../utils/actions"
 const {SET_CURRENT_CHAT, AUTO_SET_CURRENT_CHAT, ADD_CHAT, LEAVE_CHAT, ADD_MEMBER_TO_CHAT, 
-    REMOVE_MEMBER_FROM_CHAT, ADD_MESSAGE, SOMEONE_TYPING, NO_CHAT_FN} = chatActions
+    REMOVE_MEMBER_FROM_CHAT, ADD_MESSAGE, SOMEONE_TYPING} = chatActions
 
 const state = {
-   chats:[
-    // {id:'1', coverPhoto:'', chatName:"Hell 🔥🔥🔥", secured:{status:false, password: 'canopy'},
-    // members:[
-    //     {id:'21', username: 'Jessica', admin:true, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},
-    //     {id:'2', username: 'Lucy', admin:false, profilePhoto:'', accentColor:"rgb(89, 141, 29)"}, 
-        // {id:'21', username: 'Jessica', admin:true, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},
-        // {id:'2', username: 'Lucy', admin:false, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},  
-        // {id:'21', username: 'Jessica', admin:true, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},
-        // {id:'2', username: 'Lucy', admin:false, profilePhoto:'', accentColor:"rgb(89, 141, 29)"}, 
-        // {id:'21', username: 'Jessica', admin:true, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},
-        // {id:'2', username: 'Lucy', admin:false, profilePhoto:'', accentColor:"rgb(89, 141, 29)"}, 
-        // {id:'21', username: 'Jessica', admin:true, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},
-        // {id:'2', username: 'Lucy', admin:false, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},    
-        // {id:'21', username: 'Jessica', admin:true, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},
-        // {id:'2', username: 'Lucy', admin:false, profilePhoto:'', accentColor:"rgb(89, 141, 29)"}, 
-        // {id:'21', username: 'Jessica', admin:true, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},
-        // {id:'2', username: 'Lucy', admin:false, profilePhoto:'', accentColor:"rgb(89, 141, 29)"}, 
-        // {id:'21', username: 'Jessica', admin:true, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},
-        // {id:'2', username: 'Lucy', admin:false, profilePhoto:'', accentColor:"rgb(89, 141, 29)"}, 
-    // ]
-    // },
-    // {id:'2', coverPhoto:'', chatName:"Kitchen", secured:{status:false, password: 'canopy'},
-    // members:[
-    //     {id:'21', username: 'Jessica', admin:true, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},
-    //     {id:'2', username: 'Lucy', admin:false, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},
-    // ]
-    // },
-   ], //array of all user chats
+   chats:[], //array of all user chats
    currentChat:"", // id of user's current chat
-   messages:[
-    // {
-    //     chatId:'2',
-    //     messages:[
-    //         {id:'6101', userId:'21', username:'Jessica', message:'Hello everyone', time:'10:30', accentColor:"rgb(38, 40, 170)"},
-    //         {id:'104', userId:'join', username:'Cynthia', message:'Cynthia Joined', time:'10:30'},
-    //         {id:'101', userId:'101', username:'Cynthia', message:'Hello', time:'10:31', accentColor:"rgb(38, 40, 170)"},
-    //         {id:'102', userId:'1', username:'Robert', message:'How are we all doing', time:"10:31", accentColor:"rgb(89, 141, 29)"},
-    //     ],
-    //  },
-  
-   ], // all messages of user chats
-   peopleTyping:[], //names of people typing
+   messages:[], // all messages of user chats
+   peopleTyping:[], //names of people typing in the current chat
 }
 
 function chatReducer(state, action){

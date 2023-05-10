@@ -1,14 +1,3 @@
-/* .container{
-    position: fixed;
-    top: 0;
-    width: 100%;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;   
-    background-color: var(--popup-background);
-} */
-
 .container{
     width:50%;
     max-width: 600px;
@@ -24,6 +13,10 @@
     height: 34px;
 }
 
+.title{
+    color: var(--faint);
+}
+
 .inputs{
     margin-top: 20px;
     margin-bottom: 10px;
@@ -32,6 +25,7 @@
 .textarea{
     display: block;
     width: 100%;
+    font-family: 'Noto Sans Display', sans-serif;
     resize: none;
     height: 180px;
     border-radius: 5px;
