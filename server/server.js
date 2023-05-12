@@ -19,7 +19,16 @@ const {CONNECTION, DISCONNECT, CREATE_CHAT, JOIN_CHAT, SOMEONE_JOINED,
 } = require('./constance')
 
 const app = express()
-app.use(cors())
+
+// Cross Origin Resources Sharing
+const whiteList = ["https://chatbitz.netlify.app"]
+app.use(cors({
+    origin: (origin, callback) => {
+        if(whiteList.includes(origin)) callback(null, true)
+        else callback(true, new Error("Not allowed by cors"))
+    },
+    optionsSuccessStatus: 200
+}))
 app.use(morgan('tiny'))
 app.use(express.json({limit:'30mb', extended:true}))
 const server = http.createServer(app)
@@ -27,77 +36,32 @@ const server = http.createServer(app)
 const PORT = process.env.port || 4000
 
 
-let chats = [
-//   {id:'1', coverPhoto:'', chatName:"Hell 🔥🔥🔥", secured:{status:false, password: 'canopy'},
-//       members:[
-//         {id:'621', username: 'Jessica', admin:true, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},
-//         {id:'2', username: 'Lucy', admin:false, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},     
-//     ]
-//   },
-//   {id:'2', coverPhoto:'', chatName:"Kitchen", secured:{status:false, password: 'canopy'},
-//   members:[
-//         {id:'21', username: 'Jessica', admin:true, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},
-//       {id:'2', username: 'Lucy', admin:false, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},
-//   ]
-// },
-]
-
-let conversations = [
-//  {
-//     chatId:'1',
-//     messages:[
-//         {id:'6101', userId:'21', username:'Jessica', message:'Hello everyone', time:'10:30', accentColor:"rgb(38, 40, 170)"},
-//         {id:'104', userId:'join', username:'Cynthia', message:'Cynthia Joined', time:'10:30'},
-//         {id:'101', userId:'101', username:'Cynthia', message:'Hello', time:'10:31', accentColor:"rgb(38, 40, 170)"},
-//         {id:'102', userId:'1', username:'Robert', message:'How are we all doing', time:"10:31", accentColor:"rgb(89, 141, 29)"},
-//     ],
-//  },
-//  {
-//     chatId:'2',
-//     messages:[
-//         {id:'6101', userId:'21', username:'Jessica', message:'Hello everyone', time:'10:30', accentColor:"rgb(38, 40, 170)"},
-//         {id:'104', userId:'join', username:'Cynthia', message:'Cynthia Joined', time:'10:30'},
-//         {id:'101', userId:'101', username:'Cynthia', message:'Hello', time:'10:31', accentColor:"rgb(38, 40, 170)"},
-//         {id:'102', userId:'1', username:'Robert', message:'How are we all doing', time:"10:31", accentColor:"rgb(89, 141, 29)"},
-//         {id:'6101', userId:'21', username:'Jessica', message:'Hello everyone', time:'10:30', accentColor:"rgb(38, 40, 170)"},
-//         {id:'104', userId:'join', username:'Cynthia', message:'Cynthia Joined', time:'10:30'},
-//         {id:'101', userId:'101', username:'Cynthia', message:'Hello', time:'10:31', accentColor:"rgb(38, 40, 170)"},
-//     ],
-//  },
-]
-
-let images = [
-    // {id:'23', image:'string'}
-]
-
-let sockets = [
-    // {id:'sck', userId:'', username:'', chats:["chatId","chatId"]}
-]
+let chats = []
+let conversations = []
+let images = [] //not fully implemented yet
+let sockets = []
 
 // Setup socket io
 const io = new Server(server, {
     cors:{
-        origin: "http://localhost:5173",
-        // origin:"https://chatbitz.netlify.app",
+        origin: whiteList,
         methods:["GET", "POST"],
         credentials: true
     }
 })
 
-// console.log(getUserChats(chats, '20'))
-// console.log(getAllMessagesOfAChat(conversations, '1'))
 
 app.get('/', (req, res) => {
     res.send('ChatBitz Server 1.5');
 });
 
 //create new chat
-app.post('/api/create-chat', async(req, res)=>{
+app.post('/api/chat/create', async(req, res)=>{
     const {chatName, username, id, secured, accentColor, profilePhoto} = req.body
 
     try {
         let chatExist = chatAlreadyExist(chats, chatName)
-        if(chatExist)return sendError(res, "Chat Exists", 400, "Chat exists")
+        if(chatExist)return sendError(res, "Chat Exists", 400, "Chat already exists. please user a different name")
 
         // upload the profile images if they have one
         let profilePhotoId = null
@@ -109,6 +73,7 @@ app.post('/api/create-chat', async(req, res)=>{
 
         // create new room with the admin in
         let newChat = createNewChat(chatName, username, id, secured, accentColor, profilePhotoId)
+
         chats = [...chats, newChat]
 
         // create new conversation
@@ -123,7 +88,7 @@ app.post('/api/create-chat', async(req, res)=>{
 })
 
 // join a chat. also sends error to user to input password if chat is locked
-app.post('/api/join-chat', async(req, res)=>{
+app.post('/api/chat/join', async(req, res)=>{
     const {chatName, username, id, profilePhoto, accentColor, password} = req.body
 
      try {
@@ -132,7 +97,9 @@ app.post('/api/join-chat', async(req, res)=>{
 
 //       check if chat is password protected
         let secured = chat.secured.status
-        if(secured && !password) return sendError(res, "Provide Password", 404, "Provide password")
+        // if(secured && !password) return sendError(res, "Provide Password", 404, "Provide password")
+        if(secured && !password) return sendMessage(res, 204, "Provide Password")
+
 
 //       verify password if chat is password protected
         if(secured && password){
@@ -168,14 +135,14 @@ app.post('/api/join-chat', async(req, res)=>{
     }
 })
 
-app.get('/api/get-user-chats/:userId', async(req,res)=>{
+app.get('/api/user/get-chats/:userId', async(req,res)=>{
     const {userId} = req.params
     try {
         // get user chats
         let getChats = getUserChats(chats, userId)
 
         let userChats = getChats.length > 0 ? getChats : null
-        if(!userChats) return sendError(res, "No chats", 404, "You have no chats. Create or join a chat")
+        if(!userChats) return sendMessage(res, 204, "No chats")
 
         let messages = []
 
@@ -194,7 +161,7 @@ app.get('/api/get-user-chats/:userId', async(req,res)=>{
     }
 })
 
-app.get('/api/get-chat-messages/:chatId', (req, res)=>{
+app.get('/api/chat/messages/:chatId', (req, res)=>{
    
     const {chatId} = req.params
     try {
@@ -202,19 +169,6 @@ app.get('/api/get-chat-messages/:chatId', (req, res)=>{
         sendData(res, 200, messages)
     } catch (error) {
         sendError(res, error, 400, 'Failed to get chat messages')
-    }
-})
-
-//when the front gets a successful response from this, socket from front someone left
-app.patch('/api/leave-chat', (req,res)=>{
-    let {chatId, id} = req.body //userId
-
-    try {
-        chats = removeMemberFromChat(chats, chatId, id)
-        let sendResults = chatId
-        sendData(res, 200, sendResults, "Chat left successfully")
-    } catch (error) {
-        sendError(res, error, 404, "Failed to leave chat")
     }
 })
 
@@ -256,29 +210,29 @@ io.on(CONNECTION, (socket)=>{
     })
 
     socket.on(LEAVE_CHAT, (chatIdAndUserDetails)=>{
-        const {id, username, userId} = chatIdAndUserDetails
+        const {chatId, username, userId} = chatIdAndUserDetails
         // remove user from chat
         // remove chatId from user socket
         // send message and emit to other members
 
-        chats = removeMemberFromChat(chats, id, userId)
+        chats = removeMemberFromChat(chats, chatId, userId)
         
         // remove chats from user socket
-        sockets = removeChatFromUserSocket(sockets, userId, id)
-        socket.leave(id) //user sockets disconnects from the chat
+        sockets = removeChatFromUserSocket(sockets, userId, chatId)
+        socket.leave(chatId) //user sockets disconnects from the chat
 
         // check if there is any member left in the chat and delete it
-        let membersInChat = getMembersInAChat(chats, id)
+        let membersInChat = getMembersInAChat(chats, chatId)
         if(membersInChat.length > 0){ //if there are members in the chat
             // send a someone left message
-            let leaveMsg = createMessage(id, 'left', username, `${username} left`, null)
+            let leaveMsg = createMessage(chatId, 'left', username, `${username} left`, null)
             conversations = addMessageToConversation(conversations, leaveMsg)
-            socket.to(id).emit(SOMEONE_LEFT, {leaveMsg, id, userId})
+            socket.to(chatId).emit(SOMEONE_LEFT, {leaveMsg, id: chatId, userId})
         }else{
             // delete the chat, conversation and socket
-            chats = deleteChat(chats, id)
-            conversations = deleteConversation(conversations, id)
-            // socket.delete(id) //delete the socket room
+            chats = deleteChat(chats, chatId)
+            conversations = deleteConversation(conversations, chatId)
+            // socket.delete(chatId) //delete the socket room
         }
     })
 
@@ -289,7 +243,8 @@ io.on(CONNECTION, (socket)=>{
 
         // check if user is an admin
         let isAdmin = isMemberAdmin(chats, chatId, adminId)
-        // if(!isAdmin) return io.to(chatId).emit(REMOVE_MEMBER_FAILED, adminId)
+        if(!isAdmin) return io.to(chatId).emit(REMOVE_MEMBER_FAILED, adminId)
+        
 
         let userRemovedName = getUserNameById(chats, chatId, userId) // get the name of the user being removed
         chats = removeMemberFromChat(chats, chatId, userId) //remove user from the chat
