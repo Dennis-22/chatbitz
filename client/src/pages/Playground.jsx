@@ -39,11 +39,13 @@ function PlaygroundContent({connectType, connectChatId}){
     const {showMobileChats, showLeaveChat, showChatDetails, showNotAdmin, showYouWereRemoved} = playState
     const navigate = useNavigate()
 
-    // console.log('reduce chats', messages)
+    console.log({process})
 
     // create or join a chat based on user activity on the connect page
     // this is called in getUserChatsfn
     const connectUser = async()=>{
+        if(!socket) return null
+
         if(connectType === _Connect.create){
             const createChatDetails = {
                 chatId:connectChatId, 
@@ -86,7 +88,6 @@ function PlaygroundContent({connectType, connectChatId}){
         if(chats.length > 0 && !currentChat){
             // set current chat to the first chat
             if(!currentChat) chatDispatch({type:chatActions.SET_CURRENT_CHAT, payload:chats[0].id})
-            // move on
         }
 
         // there is no chat but userId is present request user chats from the backend
@@ -117,11 +118,9 @@ function PlaygroundContent({connectType, connectChatId}){
                     chatDispatch({type:chatActions.SET_CURRENT_CHAT, payload:userChats[0].id})
                 }
 
-                connectUser()
-                setProcess({loading:false, errorText:""})
             } catch (error) {
                 let errorMsg = getApiErrorResponse(error)
-                setProcess({loading:false, errorText:errorMsg})
+                return setProcess({loading:false, errorText:errorMsg})
             }        
         }
 
@@ -151,7 +150,7 @@ function PlaygroundContent({connectType, connectChatId}){
     // helpful when user is removed from a chat which is not the current chat
     useEffect(()=>{
         let isUserStillAMember = chats.find(chat => chat.id === currentChat)
-        .members.some(mem => mem.id === user.id)
+        ?.members.some(mem => mem.id === user.id)
 
         if(!isUserStillAMember)toggleYouWereRemoved(true)
         
