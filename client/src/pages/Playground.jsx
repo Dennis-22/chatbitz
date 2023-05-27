@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import {useLocation, useNavigate } from "react-router-dom"
 import styles from '../css/playground.module.css'
 import PlaygroundProvider from "../context/Playground/PlaygroundContext"
@@ -12,12 +12,14 @@ import ChatDetails from '../components/Playground/chat-details'
 import RemovedModal from "../components/global/RemovedModal"
 import NotAnAdminModal from "../components/global/NotAnAdminModal"
 import { userActions, chatActions, playgroundActions } from "../utils/actions"
-import { getApiErrorResponse, getItemFromStorage} from "../utils/helpers"
+import { connectToServer, getApiErrorResponse, getItemFromStorage} from "../utils/helpers"
 import {screenSizes, socketConstance} from '../utils/constance'
 import {_User, _Connect } from "../utils/types"
 import { getUserChatsRoute } from "../utils/api"
 
-const {CREATE_CHAT, JOIN_CHAT, SOMEONE_JOINED, SOMEONE_LEFT, 
+const _defProcessError = {status:false, text:"", btnTet:"", btnFn:()=>null} // default error object for process useState
+
+const {CREATE_CHAT, JOIN_CHAT, SOMEONE_JOINED, SOMEONE_LEFT, REJOIN_CHAT,
     SOMEONE_WAS_REMOVED, I_WAS_REMOVED, REMOVE_MEMBER_FAILED,
     PERSON_IS_TYPING, RECEIVED_MESSAGE} = socketConstance
 
@@ -32,133 +34,117 @@ export default function Playground(){
 
 function PlaygroundContent({connectType, connectChatId}){
     const {deviceWidth} = useAppContext()
-    const {userDispatch, userState:{user}} = useUserContext()
-    const {chatDispatch, socket, chatState:{chats, currentChat}} = useChatContext()
+    const {userDispatch, getUserFromStore} = useUserContext()
+    const {chatDispatch, socket, setSocket, chatState:{chats, currentChat}} = useChatContext()
     const {playDispatch, playState, toggleNotAdmin, toggleYouWereRemoved} = usePlaygroundContext()
-    const [process, setProcess] = useState({loading:!currentChat, errorText:""})
+    const [process, setProcess] = useState({loading:!currentChat, error:_defProcessError})
     const {showMobileChats, showLeaveChat, showChatDetails, showNotAdmin, showYouWereRemoved} = playState
     const navigate = useNavigate()
-
-    console.log({process})
+    const {id:userId, username, accentColor} = getUserFromStore()
+    
 
     // create or join a chat based on user activity on the connect page
-    // this is called in getUserChatsfn
-    const connectUser = async()=>{
-        if(!socket) return null
-
+    const connectUser = ()=>{
+        console.log('configure user')
+        let connectChatDetails = {userId, username, chatId:connectChatId}
         if(connectType === _Connect.create){
-            const createChatDetails = {
-                chatId:connectChatId, 
-                userId:user.id,
-                username:user.username,
-            }
-            socket.emit(CREATE_CHAT, createChatDetails)
-            return
+            console.log('create chat')
+            socket.emit(CREATE_CHAT, connectChatDetails)
         }
 
         if(connectType === _Connect.join){
-            // const {id, userId, username, accentColor} = chatIdAndUserDetails
             console.log('joining chat')
-            const joinChatDetails = {
-                chatId:connectChatId,
-                userId:user.id,
-                username:user.username,
-                accentColor:user.accentColor
-            }
-            socket.emit(JOIN_CHAT, joinChatDetails)
-            return
+            socket.emit(JOIN_CHAT, {...connectChatDetails, accentColor})
         }
-
-        //code below is expected to run only when user has refresh the page
-
-        // TODO::
-        // check user chats and for each, socket join them
-        // console.log('check user chats and socket join them')
-        // connect to server
-        // create a new socket.join and server for only refreshed joining so it does not alert other users
     }
 
-    // gets user chats and set everything up for chatting
-    // this fn is called in configureUser fn
-    const getUserChats = async()=>{
-        // check if user has a chat if not request user chat from the server. if user does not have any chat navigate to connect
-        // if there is no current chat process.loading would be set to true by default
+    const pageRefreshedFn = useCallback(async()=>{
+        // check id user is stored in session
+        // if user not stored in session, navigate from this page else below lines continues
+        // get all user chats from the backend with userId
+        // if user has no chats from the server, alert the user and navigate user from this page
+        // when user has chats on the backend, connect to server via socket and socket join all user chats
+        // set socket to new socket and set user in store wit user in session
+        setProcess({loading:true, error:_defProcessError})
+        console.log('ren refresh fun')
+        const userInSession = getItemFromStorage('User')
+        if(!userInSession) return navigate("/connect", {state: {connectType:_Connect.join}})
+
         
-        // check if user has chat and current chat
-        if(chats.length > 0 && !currentChat){
-            // set current chat to the first chat
-            if(!currentChat) chatDispatch({type:chatActions.SET_CURRENT_CHAT, payload:chats[0].id})
-        }
+        console.log('fetching chats from server', userInSession.id)
+        // request the user chats from the server
+        
+        try {
+            const {status, data:{data}} = await getUserChatsRoute(userInSession.id)
 
-        // there is no chat but userId is present request user chats from the backend
-        // helpful when user refreshes on the browser
-        if(chats.length === 0 && user.id){
+            // when user has no chat on the server
+            if(status === 204) {
+                return setProcess(()=>({
+                    loading:false, 
+                    error:{
+                        status:true,
+                        text:"You have no chats",
+                        btnFn:()=> navigate("/connect", {state: {connectType:_Connect.join}}),
+                        btnText:"Okay"
+                    }
+                }))
+            }
 
-            // request the user chats from the server
-            setProcess({loading:true, errorText:""})
-
-            try {
-                const {status, data:{data}} = await getUserChatsRoute(user.id)
-
-                // when user has no chat at the backend
-                if(status === 204) return navigate("/connect", {state: {connectType:_Connect.join}})
-                
-                // no error encountered
-                // set user chats from the results from the server
-                let {chats:userChats, messages} = data
-
-                // add chats to user chats
-                for(let chat of userChats){
-                    // get chat messages
-                    let chatMessages = messages.find(msg => msg.chatId === chat.id).messages
-                    chatDispatch({type:chatActions.ADD_CHAT, payload:{chat, messages:chatMessages}})
-                }
-                // set current chat to the first chat if userChats is more than one
-                if(userChats.length > 1){
-                    chatDispatch({type:chatActions.SET_CURRENT_CHAT, payload:userChats[0].id})
-                }
-
-            } catch (error) {
-                let errorMsg = getApiErrorResponse(error)
-                return setProcess({loading:false, errorText:errorMsg})
-            }        
-        }
-
-        connectUser()
-        setProcess({loading:false, errorText:""})
-    }
-
-
-    // check if user has necessary data to be on this page
-    const configureUser = ()=>{
-        if(user.username === ""){
-            // user is not registered in store
-            // check user from session and store the user in store if its available
-            const userInSession = getItemFromStorage('User')
-            if(userInSession === null) return navigate("/connect", {state: {connectType:_Connect.join}})
+            // no error encountered
+            // set user chats from the results from the server
+            let {chats:userChats, messages} = data
             
-            // set user in store with the user in session storage
+            let chatIds = [] //store the user chat ids and connect wih socket
+
+            // add chats to user chats
+            for(let chat of userChats){
+                // get chat messages
+                let chatMessages = messages.find(msg => msg.chatId === chat.id).messages
+                chatDispatch({type:chatActions.ADD_CHAT, payload:{chat, messages:chatMessages}})
+                chatIds.push(chat.id)
+            }
+            // set current chat to the first chat if userChats is more than one
+            if(userChats.length > 1){
+                chatDispatch({type:chatActions.SET_CURRENT_CHAT, payload:userChats[0].id})
+            }
+
+            // connect user via socket
+            let newSocket = await connectToServer()
+            newSocket.emit(REJOIN_CHAT, {userId:userInSession.id, chatIds})
+            setSocket(newSocket)
             userDispatch({type:userActions.SET_USER, payload:userInSession})
-            
+            setProcess({loading:false, error:_defProcessError})
+        } catch (error) {
+            let errorMsg = getApiErrorResponse(error)
+            setProcess(()=>({
+                loading:false,
+                error:{
+                    status:true,
+                    text:errorMsg || "Failed to load your chats",
+                    btnFn: pageRefreshedFn,
+                    btnText:"Retry"
+                }
+            }))
         }
-
-        getUserChats()
-    }
+    },[])
 
  
     // when user switches chat, this fn runs to see if user is still part of the chat
     // helpful when user is removed from a chat which is not the current chat
     useEffect(()=>{
-        let isUserStillAMember = chats.find(chat => chat.id === currentChat)
-        ?.members.some(mem => mem.id === user.id)
-
-        if(!isUserStillAMember)toggleYouWereRemoved(true)
+        if(currentChat){
+            let isUserStillAMember = chats.find(chat => chat.id === currentChat)
+            ?.members.some(mem => mem.id === userId)
+    
+            if(!isUserStillAMember)toggleYouWereRemoved(true)
+        }
         
     },[currentChat])
 
 
     useEffect(()=>{
-        configureUser()
+        if(userId){connectUser()}
+        else{pageRefreshedFn()}
     },[])
 
 
@@ -218,7 +204,7 @@ function PlaygroundContent({connectType, connectChatId}){
 
     if(process.loading) return <ModalLoading />
     
-    if(process.errorText) return <ModalError text={process.errorText} retryFn={configureUser}/>
+    if(process.error.status) return <ModalError {...process.error}/>
 
     return <>
         <div className={styles.playground}>

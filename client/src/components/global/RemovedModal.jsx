@@ -2,7 +2,6 @@ import { useNavigate } from "react-router-dom"
 import DoNotDisturbRounded from '@mui/icons-material/DoNotDisturbRounded'
 import styles from '../../css/removed.module.css'
 import Modal, {ModalButtons} from "./Modal"
-import { _PerformActionBeforeStart } from '../../utils/types'
 import { usePlaygroundContext, useChatContext } from "../../utils/hooks"
 import { _Connect } from "../../utils/types"
 import { chatActions } from "../../utils/actions"

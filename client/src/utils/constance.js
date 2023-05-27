@@ -31,8 +31,8 @@ const socketConstance = {
    
     CREATE_CHAT: 'create chat',
     JOIN_CHAT:'join chat',
-   
     SOMEONE_JOINED:'someone joined',
+    REJOIN_CHAT:'rejoin chat',
     LEAVE_CHAT: 'leave chat',
     SOMEONE_LEFT:   'someone left',
 
