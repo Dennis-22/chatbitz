@@ -1,67 +1,15 @@
+import {io} from 'socket.io-client'
+import { ENDPOINT } from "./api"
+
+async function connectToServer(){
+    let socket = await io.connect(ENDPOINT)
+    return socket
+}
+
 function idGenerator(){
     const head = Date.now().toString(36)
     const tail = Math.random().toString(36).substr(2)
     return head + tail
-}
-
-
-async function requestMaker(method, url, data){
-    if(method === 'POST'){
-        let results = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-            },
-            body:JSON.stringify(data)
-        });
-
-        let response = await results.json()
-        return response
-    }
-
-    if(method === 'GET'){
-        let request = await fetch(url)
-        if(request.ok){
-            let results = await request.json()
-            return {error:false, data:results.data}
-        }
-        let errorMsg = await request.json() 
-        return {error:true, message:errorMsg.message}
-    }
-
-    if(method === 'PUT'){
-        let results = await fetch(url, {
-            method: 'PUT',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-            },
-            body:JSON.stringify(data)
-        });
-
-        let response = await results.json()
-        return response
-    }
-
-    if(method === 'DELETE'){
-        let request = await fetch(url, {
-            method: 'DELETE',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-            },
-            body:JSON.stringify(data)
-        });
-
-        
-        if(request.ok){
-            let response = await request.json()
-            return {error:false, data:response.data}
-        }
-        let errorMsg = await request.json() 
-        return {error:true, message:errorMsg.message}
-    }
 }
 
 function setItemToSessionStorage(key, data){
@@ -83,4 +31,4 @@ function getApiErrorResponse(error){
 }
 
 
-export {requestMaker, idGenerator, setItemToSessionStorage, getItemFromStorage, getApiErrorResponse}
+export {connectToServer, idGenerator, setItemToSessionStorage, getItemFromStorage, getApiErrorResponse}

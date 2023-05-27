@@ -6,7 +6,7 @@ import { useUserContext, useChatContext } from "../utils/hooks";
 import Form from "../components/connect/Form"
 import { ModalLoading } from "../components/global/Loading";
 import { _Connect } from "../utils/types"
-import { getApiErrorResponse } from "../utils/helpers";
+import { connectToServer, getApiErrorResponse } from "../utils/helpers";
 import { createChatRoute, joinChatRoute } from "../utils/api";
 import { chatActions } from "../utils/actions";
 import logo from '../assets/logo.svg'
@@ -32,7 +32,7 @@ const joinInputs = {
 
 export default function Connect(){
     const {userState:{user}} = useUserContext()
-    const {chatDispatch, socket, connectToServer} = useChatContext()
+    const {chatDispatch, socket, setSocket} = useChatContext()
     const [connect, setConnect] = useState(useLocation()?.state?.connectType || create)
     const [connectDetails, setConnectDetails] = useState(null) //createInputs or joinInputs
     const [process, setProcess] = useState({loading:false, error:""})
@@ -59,7 +59,10 @@ export default function Connect(){
             })
             
             // connect to server and navigate to playground
-            if(!socket) await connectToServer()
+            if(!socket) {
+                let newSocket = await connectToServer()
+                setSocket(newSocket)
+            }
             navigate('/playground', {state:{connectType:create, chatId:createdChat.id}})
         } catch (error) {
             let errorMsg = getApiErrorResponse(error)
@@ -107,7 +110,10 @@ export default function Connect(){
             })
 
             // connect to socket and navigate to playground
-            if(!socket) await connectToServer()
+            if(!socket) {
+                let newSocket = await connectToServer()
+                setSocket(newSocket)
+            }
             navigate('/playground', {state:{connectType:join, chatId:chatDetails.id}})            
         } catch (error) {
             let errorMsg = getApiErrorResponse(error)

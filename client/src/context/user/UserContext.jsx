@@ -1,7 +1,7 @@
 import {createContext, useReducer, useCallback, useEffect} from 'react'
 import { state, userReducer } from './userReducer'
 import { accentColors } from '../../utils/constance'
-import { idGenerator, setItemToSessionStorage, getItemFromStorage } from '../../utils/helpers'
+import { getItemFromStorage, idGenerator, setItemToSessionStorage } from '../../utils/helpers'
 import { userActions } from "../../utils/actions"
 
 export const UserContext = createContext()
@@ -10,24 +10,40 @@ export default function UserProvider({children}){
     const [userState, userDispatch] = useReducer(userReducer, state)
 
     const createUser = useCallback(()=>{
-        // check if user is stored in session storage
-        let user = getItemFromStorage('User');
-        if(!user){
-            //create user defaults
-            let accentColor = accentColors[Math.floor(Math.random()*accentColors.length)]
-            user = {username:'', id:idGenerator(), profilePhoto:'', accentColor}
-            setItemToSessionStorage('User', user)
+        let userInSession = getItemFromStorage('User')
+        if(userInSession){
+            return userDispatch({type:userActions.SET_USER, payload:userInSession})
         }
+        
+        //create user defaults
+        /** @type {import('../../utils/types').User} */
+        let user = {
+            username:'',
+            id:idGenerator(), 
+            profilePhoto:'', 
+            accentColor: accentColors[Math.floor(Math.random()*accentColors.length)]
+        }
+        setItemToSessionStorage('User', user)
         userDispatch({type:userActions.SET_USER, payload:user})
     },[])
 
+    /**@returns {import('../../utils/types').User} */
+    const getUserFromStore = ()=>{
+        return userState.user
+    }
 
     useEffect(()=>{
-        createUser()
+        // if user's id is empty at the store, create a new user.
+        // user will always be empty once user refreshes. some instance will create a new user so this won't recreate user
+        if(!userState.user.id){
+            createUser()
+        }
     },[])
 
+
     const value = {
-        userState, userDispatch
+        userState, userDispatch,
+        createUser, getUserFromStore
     }
 
     return <UserContext.Provider value={value}>
