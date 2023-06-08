@@ -37,6 +37,16 @@ function getUserChats(chats, userId){
     return userChats || []
 }
 
+function getUserChatsFromRecycleBin(recycleBin, userId){
+    let userChats = recycleBin.find(item => item.userId === userId)
+    return userChats || null
+}
+
+function removeUserChatsFromRecycleBin(recycleBin, userId){
+    return recycleBin.filter(item => item.userId !== userId)
+
+}
+
 // rooms = removeMemberFromRoom(rooms, 'old', 'Getty')
 function removeMemberFromChat(chats, chatId, memberId){
     let newChats = chats.map((chat)=>{
@@ -64,6 +74,12 @@ function getChatMemberById(chats, chatId, memberId){
 function isMemberAdmin(chats, chatId, memberId){
     let isAdmin = getChatMemberById(chats, chatId, memberId).admin
     return isAdmin
+}
+
+function isUserAMemberOfChat(chats, chatId, userId){
+    let chatExist = getChatById(chats, chatId)
+    if(!chatExist) return false
+    return chatExist.members.some(member => member.id === userId)
 }
 
 // this returns the name of a member by his id
@@ -117,37 +133,36 @@ function getChatName(chats, chatId){
 //     return image
 // }
 
-function createUserSocket(socketId, userId, username, chats){
-    return {id:socketId, userId, username, chats}
+function addUserToActiveUsers(activeUsers, newUser){
+    return [...activeUsers, newUser]
 }
 
-function addUserToSockets(sockets, newUserSocket){
-    return [...sockets, newUserSocket]
-}
-
-function removeUserFromSocket(sockets, socketId){
-    return sockets.filter(sck => sck.id !== socketId)
-}
-
-function addChatToUserSocket(sockets, userId, chatId){
-    let newSockets = sockets.map((sck)=>{
-        if(sck.userId === userId){
-            return {...sck, chats:[...sck.chats, chatId]}
+function addChatToActiveUser(activeUsers, userId, chatId, isAdmin){
+    let newActiveUsers = activeUsers.map((user)=>{
+        if(user.userId === userId){
+            return {...user, chats:[...user.chats, {chatId, isAdmin}]}
         }
-        return sck
+        return user
     })
-    return newSockets
+    return newActiveUsers
 }
 
-function removeChatFromUserSocket(sockets, userId, chatId){
-    let newSockets = sockets.map((sck)=>{
-        if(sck.userId === userId){
-            return {...sck, chats:sck.chats.filter(cht => cht !== chatId)}
-        }
-        return sck
-    })
-    return newSockets
+function removeUserFromActiveUsers(activeUsers, userId){
+    return activeUsers.filter((user) => user.userId !== userId)
 }
+
+
+function removeChatFromActiveUser(activeUsers, userId, chatId){
+    let newActiveUsers = activeUsers.map((user)=>{
+        if(user.userId === userId){
+            return {...user, chats:user.chats.filter(cht => cht.chatId !== chatId)}
+        }
+        return user
+    })
+    return newActiveUsers
+}
+
+
 
 module.exports = {
     chatAlreadyExist,
@@ -157,7 +172,10 @@ module.exports = {
     isChatPasswordCorrect,
     addMemberToChat,
     getMembersInAChat,
+    isUserAMemberOfChat,
     getUserChats,
+    getUserChatsFromRecycleBin,
+    removeUserChatsFromRecycleBin,
     getChatMemberById,
     isMemberAdmin,
     getUserNameById,
@@ -171,9 +189,8 @@ module.exports = {
     postImage,
     // getImage,
 
-    createUserSocket,
-    addUserToSockets,
-    removeUserFromSocket,
-    addChatToUserSocket,
-    removeChatFromUserSocket
+    addUserToActiveUsers,
+    addChatToActiveUser,
+    removeChatFromActiveUser,
+    removeUserFromActiveUsers,
 }
