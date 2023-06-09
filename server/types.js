@@ -47,12 +47,18 @@ const conversations = [
     }
 ]
 
-const sockets = [ //array of all userSockets userIds and their chats
+const activeUsers = [ //array of all active users and their chats
     {
-        id:"string, socket id of a user",
+        socketId:"string, socket id of a user",
         userId:"string, unique id of a user",
         username:"string, username",
-        chats:["array, chats id of the user"]
+        accentColor:"string",
+        chats:[ // array of the user's chats 
+            {
+                chatId:"string, id of chat",
+                isAdmin:"boolean, is user an admin of the chat"
+            }
+        ],
     }
 ]
 
@@ -62,4 +68,14 @@ const images = [
         id:"string, unique id of the image",
         image:"string, image string"
     }
+]
+
+const recycleBin = [
+    {
+        socketId:"string, socket id of a user",
+        userId:"string, unique id of a user",
+        username:"string, username",
+        accentColor:"string",
+        chats:[{chatId:"string, id of a chat", isAdmin:"boolean, is user an admin of the chat"}]
+    },
 ]
