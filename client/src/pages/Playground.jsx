@@ -12,14 +12,14 @@ import ChatDetails from '../components/Playground/chat-details'
 import RemovedModal from "../components/global/RemovedModal"
 import NotAnAdminModal from "../components/global/NotAnAdminModal"
 import { userActions, chatActions, playgroundActions } from "../utils/actions"
-import { connectToServer, getApiErrorResponse, getItemFromStorage} from "../utils/helpers"
+import { connectToServer, getApiErrorResponse, getItemFromStorage, setItemToSessionStorage} from "../utils/helpers"
 import {screenSizes, socketConstance} from '../utils/constance'
 import {_User, _Connect } from "../utils/types"
 import { getUserChatsRoute } from "../utils/api"
 
 const _defProcessError = {status:false, text:"", btnTet:"", btnFn:()=>null} // default error object for process useState
 
-const {CREATE_CHAT, JOIN_CHAT, SOMEONE_JOINED, SOMEONE_LEFT, REJOIN_CHAT,
+const {CREATE_CHAT, JOIN_CHAT, SOMEONE_JOINED, SOMEONE_LEFT, REJOIN_CHAT, SOMEONE_REJOINED,
     SOMEONE_WAS_REMOVED, I_WAS_REMOVED, REMOVE_MEMBER_FAILED,
     PERSON_IS_TYPING, RECEIVED_MESSAGE} = socketConstance
 
@@ -34,29 +34,27 @@ export default function Playground(){
 
 function PlaygroundContent({connectType, connectChatId}){
     const {deviceWidth} = useAppContext()
-    const {userDispatch, getUserFromStore} = useUserContext()
+    const {userDispatch, userState:{user}} = useUserContext()
     const {chatDispatch, socket, setSocket, chatState:{chats, currentChat}} = useChatContext()
     const {playDispatch, playState, toggleNotAdmin, toggleYouWereRemoved} = usePlaygroundContext()
     const [process, setProcess] = useState({loading:!currentChat, error:_defProcessError})
     const {showMobileChats, showLeaveChat, showChatDetails, showNotAdmin, showYouWereRemoved} = playState
     const navigate = useNavigate()
-    const {id:userId, username, accentColor} = getUserFromStore()
-    
+    const {id:userId, username, accentColor} = user
 
     // create or join a chat based on user activity on the connect page
     const connectUser = ()=>{
-        console.log('configure user')
-        let connectChatDetails = {userId, username, chatId:connectChatId}
+        let connectChatDetails = {userId, username, accentColor, chatId:connectChatId}
         if(connectType === _Connect.create){
-            console.log('create chat')
             socket.emit(CREATE_CHAT, connectChatDetails)
         }
 
         if(connectType === _Connect.join){
-            console.log('joining chat')
+            console.log('joining')
             socket.emit(JOIN_CHAT, {...connectChatDetails, accentColor})
         }
     }
+
 
     const pageRefreshedFn = useCallback(async()=>{
         // check id user is stored in session
@@ -66,16 +64,14 @@ function PlaygroundContent({connectType, connectChatId}){
         // when user has chats on the backend, connect to server via socket and socket join all user chats
         // set socket to new socket and set user in store wit user in session
         setProcess({loading:true, error:_defProcessError})
-        console.log('ren refresh fun')
         const userInSession = getItemFromStorage('User')
         if(!userInSession) return navigate("/connect", {state: {connectType:_Connect.join}})
 
-        
-        console.log('fetching chats from server', userInSession.id)
         // request the user chats from the server
         
         try {
-            const {status, data:{data}} = await getUserChatsRoute(userInSession.id)
+            const userChatIds = await getItemFromStorage("Chats")
+            const {status, data:{data}} = await getUserChatsRoute(userInSession.id, userChatIds)
 
             // when user has no chat on the server
             if(status === 204) {
@@ -92,8 +88,8 @@ function PlaygroundContent({connectType, connectChatId}){
 
             // no error encountered
             // set user chats from the results from the server
-            let {chats:userChats, messages} = data
-            
+            let {userChats, messages} = data
+
             let chatIds = [] //store the user chat ids and connect wih socket
 
             // add chats to user chats
@@ -110,9 +106,13 @@ function PlaygroundContent({connectType, connectChatId}){
 
             // connect user via socket
             let newSocket = await connectToServer()
-            newSocket.emit(REJOIN_CHAT, {userId:userInSession.id, chatIds})
+            newSocket.emit(REJOIN_CHAT, {
+                userId:userInSession.id, 
+                username:userInSession.username, chatIds, accentColor:userInSession.accentColor
+            })
             setSocket(newSocket)
             userDispatch({type:userActions.SET_USER, payload:userInSession})
+            setItemToSessionStorage('Chats', chatIds)
             setProcess({loading:false, error:_defProcessError})
         } catch (error) {
             let errorMsg = getApiErrorResponse(error)
@@ -128,7 +128,6 @@ function PlaygroundContent({connectType, connectChatId}){
         }
     },[])
 
- 
     // when user switches chat, this fn runs to see if user is still part of the chat
     // helpful when user is removed from a chat which is not the current chat
     useEffect(()=>{
@@ -143,9 +142,9 @@ function PlaygroundContent({connectType, connectChatId}){
 
 
     useEffect(()=>{
-        if(userId){connectUser()}
+       if(userId){connectUser()}
         else{pageRefreshedFn()}
-    },[])
+    },[]) 
 
 
     useEffect(()=>{
@@ -157,6 +156,11 @@ function PlaygroundContent({connectType, connectChatId}){
         socket?.on(SOMEONE_LEFT, (data)=>{
             const {leaveMsg, id, userId} = data
             chatDispatch({type:chatActions.REMOVE_MEMBER_FROM_CHAT, payload:{id, userId, leaveMsg}})
+        })
+
+        socket?.on(SOMEONE_REJOINED, (data)=>{
+            const {rejoinMsg, id, oldMember} = data
+            chatDispatch({type:chatActions.ADD_MEMBER_TO_CHAT, payload:{id, newMember:oldMember, joinMsg:rejoinMsg}})
         })
 
         socket?.on(SOMEONE_WAS_REMOVED, (data)=>{
@@ -186,8 +190,8 @@ function PlaygroundContent({connectType, connectChatId}){
             }
         })
 
-        socket?.on(REMOVE_MEMBER_FAILED, (userId)=>{
-            if(userId === user.id) toggleNotAdmin(true)
+        socket?.on(REMOVE_MEMBER_FAILED, (removedUserId)=>{
+            if(removedUserId === userId) toggleNotAdmin(true)
         })
 
         socket?.on(PERSON_IS_TYPING, (data)=>{

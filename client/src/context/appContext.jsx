@@ -1,5 +1,4 @@
 import {useState, createContext, useEffect} from 'react'
-import {_ChatMemberDetails} from '../utils/types'
 
 export const AppContext = createContext()
 

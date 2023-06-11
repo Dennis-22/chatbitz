@@ -4,16 +4,17 @@ const cors = require('cors')
 const http = require('http');
 const {Server} = require('socket.io')
 
-const {idGenerator, createNewChat, createNewMember, createConversation, createMessage} = require('./utils')
+const {idGenerator, createNewChat, createNewActiveUser, createNewMember, createConversation, createMessage} = require('./utils')
 const {sendMessage, sendData, sendError} = require('./response')
 
 const {chatAlreadyExist, getChatName, getChatDetails, getChatById, isChatPasswordCorrect, addMemberToChat,
-  getMembersInAChat, getUserChats, getChatMemberById, isMemberAdmin, getUserNameById, removeMemberFromChat, deleteChat, deleteChatWithNotMembers, deleteConversation,
-    addMessageToConversation, getAllMessagesOfAChat, postImage,
-    createUserSocket, addUserToSockets, removeUserFromSocket, addChatToUserSocket, removeChatFromUserSocket
+  getMembersInAChat, isUserAMemberOfChat, getUserChats, addUserToRecycleBin, getUserFromRecycleBin, removeUserFromRecycleBin,
+  getChatMemberById, isMemberAdmin, getUserNameById, removeMemberFromChat, deleteChat, deleteChatWithNotMembers, deleteConversation,
+    addMessageToConversation, getAllMessagesOfAChat, postImage, 
+    addUserToActiveUsers, addChatToActiveUser, removeUserFromActiveUsers, removeChatFromActiveUser
 } = require('./helpers')
 
-const {CONNECTION, DISCONNECT, CREATE_CHAT, JOIN_CHAT, SOMEONE_JOINED,
+const {CONNECTION, DISCONNECT, CREATE_CHAT, JOIN_CHAT, SOMEONE_JOINED, REJOIN_CHAT, SOMEONE_REJOINED,
     LEAVE_CHAT, SOMEONE_LEFT, REMOVE_MEMBER, SOMEONE_WAS_REMOVED, I_WAS_REMOVED, REMOVE_MEMBER_FAILED,
     SEND_MESSAGE, RECEIVED_MESSAGE, TYPING, PERSON_IS_TYPING
 } = require('./constance')
@@ -21,14 +22,15 @@ const {CONNECTION, DISCONNECT, CREATE_CHAT, JOIN_CHAT, SOMEONE_JOINED,
 const app = express()
 
 // Cross Origin Resources Sharing
-const whiteList = ["https://chatbitz.netlify.app"]
-app.use(cors({
-    origin: (origin, callback) => {
-        if(whiteList.includes(origin)) callback(null, true)
-        else callback(true, new Error("Not allowed by cors"))
-    },
-    optionsSuccessStatus: 200
-}))
+const whiteList = ["http://localhost:5173"]
+// app.use(cors({
+//     origin: (origin, callback) => {
+//         if(whiteList.includes(origin)) callback(null, true)
+//         else callback(true, new Error("Not allowed by cors"))
+//     },
+//     optionsSuccessStatus: 200
+// }))
+app.use(cors())
 app.use(morgan('tiny'))
 app.use(express.json({limit:'30mb', extended:true}))
 const server = http.createServer(app)
@@ -36,10 +38,78 @@ const server = http.createServer(app)
 const PORT = process.env.port || 4000
 
 
-let chats = []
+// let chats = []
 let conversations = []
+
+let chats = [
+    // {id:'1', coverPhoto:'', chatName:"Hell 🔥🔥🔥", secured:{status:false, password: 'canopy'},
+    //     members:[
+    //         {id:'21', username: 'Jessica', admin:true, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},
+    //         {id:'li56tr85ae604cnpud', username: 'Lucy', admin:false, profilePhoto:'', accentColor:"rgb(89, 141, 29)"}, 
+    //         {id:'212', username: 'Jessica', admin:true, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},
+    //     ]
+    // },
+    // {id:'2', coverPhoto:'', chatName:"Kitchen", secured:{status:false, password: 'canopy'},
+    //     members:[
+    //         {id:'21', username: 'Jessica', admin:true, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},
+    //         {id:'li56tr85ae604cnpud', username: 'Lucy', admin:false, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},
+    //     ]
+    // },
+]
+
+// let conversations = [
+//     {
+//         chatId:'1',
+//         messages:[
+//             {id:'6101', userId:'21', username:'Jessica', message:'Hello everyone', time:'10:30', accentColor:"rgb(38, 40, 170)"},
+//             {id:'104', userId:'join', username:'Cynthia', message:'Cynthia Joined', time:'10:30'},
+//             {id:'101', userId:'101', username:'Cynthia', message:'Hello', time:'10:31', accentColor:"rgb(38, 40, 170)"},
+//             {id:'102', userId:'1', username:'Robert', message:'How are we all doing', time:"10:31", accentColor:"rgb(89, 141, 29)"},
+//         ],
+//     },
+//     {
+//         chatId:'2',
+//         messages:[
+//             {id:'6101', userId:'21', username:'Jessica', message:'Hello everyone', time:'10:30', accentColor:"rgb(38, 40, 170)"},
+//             {id:'104', userId:'join', username:'Cynthia', message:'Cynthia Joined', time:'10:30'},
+//             {id:'101', userId:'101', username:'Cynthia', message:'Hello', time:'10:31', accentColor:"rgb(38, 40, 170)"},
+//             {id:'102', userId:'1', username:'Robert', message:'How are we all doing', time:"10:31", accentColor:"rgb(89, 141, 29)"},
+//             {id:'6101', userId:'21', username:'Jessica', message:'Hello everyone', time:'10:30', accentColor:"rgb(38, 40, 170)"},
+//             {id:'104', userId:'join', username:'Cynthia', message:'Cynthia Joined', time:'10:30'},
+//             {id:'101', userId:'101', username:'Cynthia', message:'Hello', time:'10:31', accentColor:"rgb(38, 40, 170)"},
+//         ],
+//     },
+// ]
 let images = [] //not fully implemented yet
-let sockets = []
+let activeUsers = []
+let recycleBin = [];
+
+// console.log(getUserFromRecycleBin(recycleBin, "123").chats)
+
+// console.log("before", activeUsers)
+// console.log(activeUsers)
+// console.log("after", activeUsers)
+// const newUser = createNewActiveUser("sock", "123", "ama", "yellow", [{chatId:'3', isAdmin:true}])
+// activeUsers = addUserToActiveUsers(activeUsers, newUser)
+// activeUsers = addChatToActiveUser(activeUsers, "123", "chatId", false)
+// console.log(activeUsers[0].chats)
+// activeUsers = removeChatFromActiveUser(activeUsers, "123", "3")
+// console.log(activeUsers[0].chats)
+
+// (()=>{
+//     // get userId
+//     let socketId = "1"
+//     let user = activeUsers.find((user)=> user.id === socketId)
+//     activeUsers = removeUserFromActiveUsers(activeUsers, user.userId)
+
+//     console.log('active')
+//     console.log(activeUsers)
+
+//     recycleBin = addUserToRecycleBin(recycleBin, user)
+    
+//     console.log('recycle')
+//     console.log(recycleBin[0].chats)
+// })();
 
 // Setup socket io
 const io = new Server(server, {
@@ -73,7 +143,6 @@ app.post('/api/chat/create', async(req, res)=>{
 
         // create new room with the admin in
         let newChat = createNewChat(chatName, username, id, secured, accentColor, profilePhotoId)
-
         chats = [...chats, newChat]
 
         // create new conversation
@@ -91,13 +160,12 @@ app.post('/api/chat/create', async(req, res)=>{
 app.post('/api/chat/join', async(req, res)=>{
     const {chatName, username, id, profilePhoto, accentColor, password} = req.body
 
-     try {
+    try {
         let chat = getChatDetails(chats, chatName)
         if(!chat) return sendError(res, "Join Chat Failed", 404, "Sorry, chat does not exist")
 
 //       check if chat is password protected
         let secured = chat.secured.status
-        // if(secured && !password) return sendError(res, "Provide Password", 404, "Provide password")
         if(secured && !password) return sendMessage(res, 204, "Provide Password")
 
 
@@ -135,27 +203,44 @@ app.post('/api/chat/join', async(req, res)=>{
     }
 })
 
-app.get('/api/user/get-chats/:userId', async(req,res)=>{
-    const {userId} = req.params
+// api/user/get-chats/userId=userId&chats=chatId1,chatId2
+app.get('/api/user/get-chats/query', async(req,res)=>{
+    const {userId, chats:userChats} = req.query
+    let splitUserChats = userChats.split(',')
+
     try {
-        // get user chats
-        let getChats = getUserChats(chats, userId)
+        // // get user chats
+        let userFromRecycle = getUserFromRecycleBin(recycleBin, userId)
+        if(!userFromRecycle) return sendMessage(res, 204, "No chats")
 
-        let userChats = getChats.length > 0 ? getChats : null
-        if(!userChats) return sendMessage(res, 204, "No chats")
 
-        let messages = []
-
-        if(userChats){
-            // get the messages of each chat
-            for(let chat of userChats){
-                let chatMessage = getAllMessagesOfAChat(conversations, chat.id)
-                messages.push({chatId:chat.id, messages:chatMessage})
-            }
+        // check if user is actually in the requested chatIds
+        let userVerifiedChats = []
+        for(let chatId of splitUserChats){
+            const chat = userFromRecycle.chats.find(chat => chat.chatId === chatId)
+            if(chat)userVerifiedChats.push({chatId:chat.chatId, isAdmin:chat.isAdmin})
         }
 
-        const data = {chats:userChats, messages}
-        sendData(res, 200, data)
+        if(userVerifiedChats.length === 0) return sendMessage(res, 204, "No chats")
+
+        // get each chat and messages
+        let userChats = []
+        let messages = []
+
+        for(let chat of userVerifiedChats){
+            const {chatId, isAdmin} = chat
+            const chatDetails = getChatById(chats, chatId)
+            const chatMessages = getAllMessagesOfAChat(conversations, chatId)
+            
+            let {userId, username, accentColor} = userFromRecycle
+           
+            // add user details to chat
+            let userDetails = createNewMember(username, userId, isAdmin, "", accentColor)
+            userChats.push({...chatDetails, members:[...chatDetails.members, userDetails]})
+            messages.push({chatId, messages:chatMessages})
+        }
+
+        sendData(res, 200, {userChats, messages})
     } catch (error) {
         sendError(res, error, 400, 'Failed to get user chats')
     }
@@ -182,23 +267,30 @@ io.on(CONNECTION, (socket)=>{
 
     // creating a chat
     socket.on(CREATE_CHAT, (createChatDetails)=>{
-        const {chatId, userId, username} = createChatDetails
-        
+        const {chatId, userId, username, accentColor} = createChatDetails
         socket.join(chatId)
-        
-        // add chatId and user info to user socket
-        let userSocket = createUserSocket(socket.id, userId, username, [chatId])
-        sockets = addUserToSockets(sockets, userSocket)
+
+        // create an active user
+        let newActiveUser = createNewActiveUser(
+            socket.id, 
+            userId, username, accentColor,
+            [{chatId:chatId, isAdmin:true}] 
+        )
+        activeUsers = addUserToActiveUsers(activeUsers, newActiveUser)
     })
 
     // joining a chat
     socket.on(JOIN_CHAT, (chatIdAndUserDetails)=>{
         const {chatId, userId, username, accentColor} = chatIdAndUserDetails
         socket.join(chatId)
+
         
-        // // add user to socket
-        let userSocket = createUserSocket(socket.id, userId, username, [chatId])
-        sockets = addUserToSockets(sockets, userSocket)
+        // create active user
+        let newActiveUser = createNewActiveUser(socket.id, userId, username, accentColor, 
+            [{chatId:chatId, isAdmin:false}]    
+        )
+        
+        activeUsers = addUserToActiveUsers(activeUsers, newActiveUser)
 
         // emit a joined message and add to the chat messages
         let joinMsg = createMessage(chatId, 'join', username, `${username} joined`, accentColor)
@@ -209,6 +301,36 @@ io.on(CONNECTION, (socket)=>{
         socket.to(chatId).emit(SOMEONE_JOINED, {joinMsg, id: chatId, newUser})
     })
 
+    // when user refreshes the browser, the socket gets disconnected 
+    // rejoin chats via this socket.
+    socket.on(REJOIN_CHAT, (userIdAndChatIds)=>{
+        const {userId, username, accentColor, chatIds} = userIdAndChatIds
+
+        // create active user and add to active users
+        let activeUser = createNewActiveUser(socket.id, userId, username, accentColor, [])
+        activeUsers = addUserToActiveUsers(activeUsers, activeUser)
+
+        let userChatsFromRecycleBin = getUserFromRecycleBin(recycleBin, userId).chats
+
+        for(let chatId of chatIds){
+            socket.join(chatId)
+            let isUserAdminOfChat = userChatsFromRecycleBin.find(chat => chat.chatId === chatId).isAdmin
+            activeUsers = addChatToActiveUser(activeUsers, userId, chatId, isUserAdminOfChat)
+
+            let oldMember = createNewMember(username, userId, isMemberAdmin.isAdmin, "", accentColor)
+            chats = addMemberToChat(chats, chatId, oldMember)
+            
+            // emit a joined message and add to the chat messages
+            let rejoinMsg = createMessage(chatId, 'rejoined', username, `${username} rejoined`, accentColor)
+            conversations = addMessageToConversation(conversations, rejoinMsg)
+
+            socket.to(chatId).emit(SOMEONE_REJOINED, {rejoinMsg, id:chatId, oldMember})
+        }
+
+        // remove user chat from the recyclebin
+        recycleBin = removeUserFromRecycleBin(recycleBin, userId)
+    })
+
     socket.on(LEAVE_CHAT, (chatIdAndUserDetails)=>{
         const {chatId, username, userId} = chatIdAndUserDetails
         // remove user from chat
@@ -217,8 +339,8 @@ io.on(CONNECTION, (socket)=>{
 
         chats = removeMemberFromChat(chats, chatId, userId)
         
-        // remove chats from user socket
-        sockets = removeChatFromUserSocket(sockets, userId, chatId)
+        // remove chats from the users chats
+        activeUsers = removeChatFromActiveUser(activeUsers, userId, chatId)
         socket.leave(chatId) //user sockets disconnects from the chat
 
         // check if there is any member left in the chat and delete it
@@ -250,7 +372,7 @@ io.on(CONNECTION, (socket)=>{
         chats = removeMemberFromChat(chats, chatId, userId) //remove user from the chat
 
         // remove chat from userSocket
-        sockets = removeChatFromUserSocket(sockets, userId, chatId)
+        activeUsers = removeChatFromActiveUser(activeUsers, userId, chatId)
 
         // create a message for other members in the chat  
         let userRemovedMsg = createMessage(chatId, 'user-removed', userRemovedName, `${adminName} removed ${userRemovedName}`, null)
@@ -279,27 +401,28 @@ io.on(CONNECTION, (socket)=>{
     })
 
     socket.on(DISCONNECT, ()=>{
-        // when a user leaves or disconnects without using the right channel
-        // by using the socket id, get the chat user was in and emit user left
+        
+        // remove user from active users and move to recycle bin
+        let user = activeUsers.find(user => user.socketId === socket.id)
+        recycleBin = addUserToRecycleBin(recycleBin, user)
+        activeUsers = removeUserFromActiveUsers(activeUsers, user.userId)
 
-        let userSocket = sockets.find(socketId => socketId.id === socket.id)
-     
-        if(userSocket){
-            // check if user has his id in any of the chats.
-            if(userSocket.chats.length > 0){
-                // get all chats user is in, check if there are any members and emit user left
-                for(let chatId of userSocket.chats){
-                    chats = removeMemberFromChat(chats, chatId, userSocket.userId) //remove user from chat
+
+        if(user){
+            if(user.chats.length > 0){
+                for(const chat of user.chats){
+                    let {chatId} = chat
+                    chats = removeMemberFromChat(chats, chatId, user.userId) //remove user from chat
 
                     let membersInChat = getMembersInAChat(chats, chatId)
 
                     //if there are other members, send message a "member has left" msg to them
                     if(membersInChat.length > 0){ // there are other members in the chat. greater than 1 cos the user leaving counts as 1
 
-                        let leaveMsg = createMessage(chatId, 'left', userSocket.username, `${userSocket.username} left`, null)
+                        let leaveMsg = createMessage(chatId, 'left', user.username, `${user.username} left`, null)
                         conversations = addMessageToConversation(conversations, leaveMsg)
 
-                        socket.to(chatId).emit(SOMEONE_LEFT, {leaveMsg, id:chatId, userId:userSocket.userId})
+                        socket.to(chatId).emit(SOMEONE_LEFT, {leaveMsg, id:chatId, userId:user.userId})
                         socket.leave(chatId)
                     }else{ //there are no other members
                         // delete chat and conversations
@@ -309,7 +432,7 @@ io.on(CONNECTION, (socket)=>{
                 }
             }
         }
-        
+
         console.log(socket.id, ' disconnected')
     })
 }) 

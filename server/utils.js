@@ -26,7 +26,9 @@ function createConversation(chatId){
     return newConversation
 }
 
-
+function createNewActiveUser(socketId, userId, username, accentColor, chats){
+    return {socketId, userId, username, accentColor, chats:[...chats]}
+}
 
 // just a message being sent by a user
 function createMessage(chatId, userId, username, message, accentColor, time){
@@ -40,5 +42,5 @@ function createMessage(chatId, userId, username, message, accentColor, time){
 }
 
 module.exports = {idGenerator, createNewMember, createNewChat,
-    createConversation, idGenerator, createMessage,
+    createConversation, idGenerator, createMessage, createNewActiveUser
 }

@@ -37,14 +37,17 @@ function getUserChats(chats, userId){
     return userChats || []
 }
 
-function getUserChatsFromRecycleBin(recycleBin, userId){
-    let userChats = recycleBin.find(item => item.userId === userId)
-    return userChats || null
+function addUserToRecycleBin(recycleBin, user){
+    return [...recycleBin, user]
 }
 
-function removeUserChatsFromRecycleBin(recycleBin, userId){
-    return recycleBin.filter(item => item.userId !== userId)
+function getUserFromRecycleBin(recycleBin, userId){
+    let user = recycleBin.find(item => item.userId === userId)
+    return user || null
+}
 
+function removeUserFromRecycleBin(recycleBin, userId){
+    return recycleBin.filter(user => user.userId !== userId)
 }
 
 // rooms = removeMemberFromRoom(rooms, 'old', 'Getty')
@@ -124,9 +127,9 @@ function getChatName(chats, chatId){
     return getChatById(chats, chatId).chatName
 }
 
- function postImage(images, image, id){
-     return [...images, {id, image}]
- }
+function postImage(images, image, id){
+    return [...images, {id, image}]
+}
 
 // function getImage(images, id){
 //     let image = images.find(image => image.id === id)
@@ -174,8 +177,10 @@ module.exports = {
     getMembersInAChat,
     isUserAMemberOfChat,
     getUserChats,
-    getUserChatsFromRecycleBin,
-    removeUserChatsFromRecycleBin,
+
+    addUserToRecycleBin,
+    getUserFromRecycleBin,
+    removeUserFromRecycleBin,
     getChatMemberById,
     isMemberAdmin,
     getUserNameById,

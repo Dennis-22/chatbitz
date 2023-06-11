@@ -1,6 +1,5 @@
 .container{
-    width: 30%;
-    max-width: 400px;
+    width: min(95%, 400px);
     background-color: var(--black);
     border-radius: 5px;
 }
@@ -12,8 +11,4 @@
 
 .text{
     margin-bottom: 10px;
-}
-
-@media screen and (max-width: 768px) {
-    .container{width: 90%;}
 }

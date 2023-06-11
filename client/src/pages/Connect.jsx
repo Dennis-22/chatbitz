@@ -6,7 +6,7 @@ import { useUserContext, useChatContext } from "../utils/hooks";
 import Form from "../components/connect/Form"
 import { ModalLoading } from "../components/global/Loading";
 import { _Connect } from "../utils/types"
-import { connectToServer, getApiErrorResponse } from "../utils/helpers";
+import { connectToServer, getApiErrorResponse, setItemToSessionStorage} from "../utils/helpers";
 import { createChatRoute, joinChatRoute } from "../utils/api";
 import { chatActions } from "../utils/actions";
 import logo from '../assets/logo.svg'
@@ -38,7 +38,12 @@ export default function Connect(){
     const [process, setProcess] = useState({loading:false, error:""})
     const navigate = useNavigate()
 
-    
+    // updates user details and chats in session storage
+    const updateStore = (user, chatId)=>{
+        setItemToSessionStorage("User", {...user})
+        setItemToSessionStorage('Chats', [chatId])
+    }
+
     const handleCreateChat = async(e)=>{
         e.preventDefault()
         // connect to the server
@@ -63,6 +68,9 @@ export default function Connect(){
                 let newSocket = await connectToServer()
                 setSocket(newSocket)
             }
+
+            // update session storage with username and user chats
+            updateStore({...user}, createdChat.id)
             navigate('/playground', {state:{connectType:create, chatId:createdChat.id}})
         } catch (error) {
             let errorMsg = getApiErrorResponse(error)
@@ -114,7 +122,9 @@ export default function Connect(){
                 let newSocket = await connectToServer()
                 setSocket(newSocket)
             }
-            navigate('/playground', {state:{connectType:join, chatId:chatDetails.id}})            
+            
+            updateStore({...user}, chatDetails.id)
+            navigate('/playground', {state:{connectType:join, chatId:chatDetails.id}}) 
         } catch (error) {
             let errorMsg = getApiErrorResponse(error)
             setProcess({loading:false, error:errorMsg})

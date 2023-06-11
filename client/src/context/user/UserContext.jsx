@@ -27,10 +27,6 @@ export default function UserProvider({children}){
         userDispatch({type:userActions.SET_USER, payload:user})
     },[])
 
-    /**@returns {import('../../utils/types').User} */
-    const getUserFromStore = ()=>{
-        return userState.user
-    }
 
     useEffect(()=>{
         // if user's id is empty at the store, create a new user.
@@ -43,7 +39,7 @@ export default function UserProvider({children}){
 
     const value = {
         userState, userDispatch,
-        createUser, getUserFromStore
+        createUser
     }
 
     return <UserContext.Provider value={value}>

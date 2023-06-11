@@ -9,4 +9,7 @@ const API = axios.create({
 export const createChatRoute = (createChatProps)=>API.post(`/chat/create`, createChatProps)
 export const joinChatRoute = (joinChatProps)=>API.post(`/chat/join`, joinChatProps)
 export const getChatMessages = (chatId)=>API.get(`/chat/messages/${chatId}`)
-export const getUserChatsRoute = (userId)=>API.get(`/user/get-chats/${userId}`)
+export const getUserChatsRoute = (userId, chats)=>{
+    chats = chats.join(",")
+    return API.get(`/user/get-chats/query?userId=${userId}&chats=${chats}`)
+}

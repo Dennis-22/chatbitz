@@ -1,6 +1,5 @@
 .wrap{
-    width: 45%;
-    max-width: 400px;
+    width: min(95%, 400px);
     padding: 20px 10px;
     background-color: var(--black);
     border-radius: 5px;

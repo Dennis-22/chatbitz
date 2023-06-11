@@ -2,7 +2,7 @@ const screenSizes = {large: 1000, small: 770}
 
 
 // ids of messages neither user nor participants 
-const defMsgsIds = ['left', 'join', 'user-removed']
+const defMsgsIds = ['left', 'join', 'user-removed', 'rejoined']
 
 // character limit user can input for chat name and username
 const charsAllowed = {
@@ -32,14 +32,16 @@ const socketConstance = {
     CREATE_CHAT: 'create chat',
     JOIN_CHAT:'join chat',
     SOMEONE_JOINED:'someone joined',
-    REJOIN_CHAT:'rejoin chat',
     LEAVE_CHAT: 'leave chat',
     SOMEONE_LEFT:   'someone left',
 
-    REMOVE_MEMBER:'remove-member',
-    REMOVE_MEMBER_FAILED:'remove-member-failed',
-    SOMEONE_WAS_REMOVED:'someone-were-removed',
-    I_WAS_REMOVED:'i-was-removed',
+    REJOIN_CHAT:'rejoin chat',
+    SOMEONE_REJOINED:'some rejoined',
+
+    REMOVE_MEMBER:'remove member',
+    REMOVE_MEMBER_FAILED:'remove member failed',
+    SOMEONE_WAS_REMOVED:'someone were removed',
+    I_WAS_REMOVED:'i was removed',
 
     SEND_MESSAGE:'send message',
     RECEIVED_MESSAGE: 'received message',
