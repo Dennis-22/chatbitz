@@ -38,11 +38,6 @@ export default function Connect(){
     const [process, setProcess] = useState({loading:false, error:""})
     const navigate = useNavigate()
 
-    // updates user details and chats in session storage
-    const updateStore = (user, chatId)=>{
-        setItemToSessionStorage("User", {...user})
-        setItemToSessionStorage('Chats', [chatId])
-    }
 
     const handleCreateChat = async(e)=>{
         e.preventDefault()
@@ -70,7 +65,7 @@ export default function Connect(){
             }
 
             // update session storage with username and user chats
-            updateStore({...user}, createdChat.id)
+            setItemToSessionStorage("User", {...user})
             navigate('/playground', {state:{connectType:create, chatId:createdChat.id}})
         } catch (error) {
             let errorMsg = getApiErrorResponse(error)
@@ -123,7 +118,7 @@ export default function Connect(){
                 setSocket(newSocket)
             }
             
-            updateStore({...user}, chatDetails.id)
+            setItemToSessionStorage("User", {...user})
             navigate('/playground', {state:{connectType:join, chatId:chatDetails.id}}) 
         } catch (error) {
             let errorMsg = getApiErrorResponse(error)
