@@ -42,27 +42,39 @@ function PlaygroundContent({connectType, connectChatId}){
     const navigate = useNavigate()
     const {id:userId, username, accentColor} = user
 
-    // create or join a chat based on user activity on the connect page
+    /**
+     * Ensure user is eligible to be on the page by checking the length of the chats in session storage
+     * Leave this page if user chats is empty
+     * Creates or joins a chat based on user activity from the connect page
+     */
     const connectUser = ()=>{
+        let userChats = getItemFromStorage("Chats")
+        //this will not be empty array or null if user joined or created a chat 
+        if(!userChats || userChats.length === 0 ){
+            return navigate("/connect", {state: {connectType:_Connect.join}})
+        }
+
         let connectChatDetails = {userId, username, accentColor, chatId:connectChatId}
         if(connectType === _Connect.create){
             socket.emit(CREATE_CHAT, connectChatDetails)
         }
 
         if(connectType === _Connect.join){
-            console.log('joining')
             socket.emit(JOIN_CHAT, {...connectChatDetails, accentColor})
         }
     }
 
-
+    /**
+     * When the browser is refreshed on the chat screen
+     * check id user is stored in session
+     * reset user chats to empty and request new user chats from the backend
+     * if user not stored in session, navigate from this page else below lines continues
+     * request all user chats from the backend with user id
+     * if user has no chats from the server, alert the user and navigate user from this page
+     * when user has chats on the backend, connect to server via socket and socket join all user chats
+     * set socket to new socket and set user in store with user in session
+     */
     const pageRefreshedFn = useCallback(async()=>{
-        // check id user is stored in session
-        // if user not stored in session, navigate from this page else below lines continues
-        // get all user chats from the backend with userId
-        // if user has no chats from the server, alert the user and navigate user from this page
-        // when user has chats on the backend, connect to server via socket and socket join all user chats
-        // set socket to new socket and set user in store wit user in session
         setProcess({loading:true, error:_defProcessError})
         const userInSession = getItemFromStorage('User')
         if(!userInSession) return navigate("/connect", {state: {connectType:_Connect.join}})
@@ -70,7 +82,9 @@ function PlaygroundContent({connectType, connectChatId}){
         // request the user chats from the server
         
         try {
-            const userChatIds = await getItemFromStorage("Chats")
+            const userChatIds = await getItemFromStorage("Chats") //get all user chat ids from storage
+            chatDispatch({type:chatActions.LAVE_ALL_CHATS}) // delete all user chats from storage
+
             const {status, data:{data}} = await getUserChatsRoute(userInSession.id, userChatIds)
 
             // when user has no chat on the server
@@ -99,20 +113,15 @@ function PlaygroundContent({connectType, connectChatId}){
                 chatDispatch({type:chatActions.ADD_CHAT, payload:{chat, messages:chatMessages}})
                 chatIds.push(chat.id)
             }
-            // set current chat to the first chat if userChats is more than one
-            if(userChats.length > 1){
-                chatDispatch({type:chatActions.SET_CURRENT_CHAT, payload:userChats[0].id})
-            }
+                
+            // set current chat
+            chatDispatch({type:chatActions.AUTO_SET_CURRENT_CHAT, payload:{noChatsCallback:null}})
 
             // connect user via socket
             let newSocket = await connectToServer()
-            newSocket.emit(REJOIN_CHAT, {
-                userId:userInSession.id, 
-                username:userInSession.username, chatIds, accentColor:userInSession.accentColor
-            })
+            newSocket.emit(REJOIN_CHAT, userInSession.id)
             setSocket(newSocket)
             userDispatch({type:userActions.SET_USER, payload:userInSession})
-            setItemToSessionStorage('Chats', chatIds)
             setProcess({loading:false, error:_defProcessError})
         } catch (error) {
             let errorMsg = getApiErrorResponse(error)
@@ -128,8 +137,17 @@ function PlaygroundContent({connectType, connectChatId}){
         }
     },[])
 
-    // when user switches chat, this fn runs to see if user is still part of the chat
-    // helpful when user is removed from a chat which is not the current chat
+
+    useEffect(()=>{
+        if(userId){connectUser()}
+        else{pageRefreshedFn()}
+    },[]) 
+
+
+    /**
+     * when user switches chat, this fn runs to see if user is still part of the chat
+     * helpful when user is removed from a chat which is not the current chat
+     */
     useEffect(()=>{
         if(currentChat){
             let isUserStillAMember = chats.find(chat => chat.id === currentChat)
@@ -139,12 +157,6 @@ function PlaygroundContent({connectType, connectChatId}){
         }
         
     },[currentChat])
-
-
-    useEffect(()=>{
-       if(userId){connectUser()}
-        else{pageRefreshedFn()}
-    },[]) 
 
 
     useEffect(()=>{
@@ -160,7 +172,7 @@ function PlaygroundContent({connectType, connectChatId}){
 
         socket?.on(SOMEONE_REJOINED, (data)=>{
             const {rejoinMsg, id, oldMember} = data
-            chatDispatch({type:chatActions.ADD_MEMBER_TO_CHAT, payload:{id, newMember:oldMember, joinMsg:rejoinMsg}})
+            chatDispatch({type:chatActions.ADD_MEMBER_TO_CHAT, payload:{id, newUser:oldMember, joinMsg:rejoinMsg}})
         })
 
         socket?.on(SOMEONE_WAS_REMOVED, (data)=>{
@@ -202,8 +214,6 @@ function PlaygroundContent({connectType, connectChatId}){
         socket?.on(RECEIVED_MESSAGE, (message)=>{
             chatDispatch({type:chatActions.ADD_MESSAGE, payload:{id:message.chatId, message}})
         })
-        
-
     },[socket])
 
     if(process.loading) return <ModalLoading />

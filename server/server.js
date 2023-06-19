@@ -270,13 +270,19 @@ io.on(CONNECTION, (socket)=>{
         const {chatId, userId, username, accentColor} = createChatDetails
         socket.join(chatId)
 
-        // create an active user
-        let newActiveUser = createNewActiveUser(
-            socket.id, 
-            userId, username, accentColor,
-            [{chatId:chatId, isAdmin:true}] 
-        )
-        activeUsers = addUserToActiveUsers(activeUsers, newActiveUser)
+        // create active user and add to active users if user does not exist
+        let activeUserAlreadyExist = activeUsers.some(user => user.userId !== userId)
+        if(activeUserAlreadyExist){
+            activeUsers = addChatToActiveUser(activeUsers, userId, chatId, false)
+        }else{
+            // create an active user
+            let newActiveUser = createNewActiveUser(
+                socket.id, 
+                userId, username, accentColor,
+                [{chatId:chatId, isAdmin:true}] 
+            )
+            activeUsers = addUserToActiveUsers(activeUsers, newActiveUser)
+        }        
     })
 
     // joining a chat
@@ -284,13 +290,17 @@ io.on(CONNECTION, (socket)=>{
         const {chatId, userId, username, accentColor} = chatIdAndUserDetails
         socket.join(chatId)
 
-        
-        // create active user
-        let newActiveUser = createNewActiveUser(socket.id, userId, username, accentColor, 
-            [{chatId:chatId, isAdmin:false}]    
-        )
-        
-        activeUsers = addUserToActiveUsers(activeUsers, newActiveUser)
+        // create active user and add to active users if user does not exist
+        let activeUserAlreadyExist = activeUsers.some(user => user.userId === userId)
+        if(activeUserAlreadyExist){
+            activeUsers = addChatToActiveUser(activeUsers, userId, chatId, false)
+        }else{
+            let newActiveUser = createNewActiveUser(socket.id, userId, username, accentColor, 
+                [{chatId:chatId, isAdmin:false}]    
+            )
+            activeUsers = addUserToActiveUsers(activeUsers, newActiveUser)
+        }
+
 
         // emit a joined message and add to the chat messages
         let joinMsg = createMessage(chatId, 'join', username, `${username} joined`, accentColor)
@@ -303,28 +313,35 @@ io.on(CONNECTION, (socket)=>{
 
     // when user refreshes the browser, the socket gets disconnected 
     // rejoin chats via this socket.
-    socket.on(REJOIN_CHAT, (userIdAndChatIds)=>{
-        const {userId, username, accentColor, chatIds} = userIdAndChatIds
+    socket.on(REJOIN_CHAT, (userId)=>{
+        // get the user rejoining from the recycle bin
+        const userRejoining = getUserFromRecycleBin(recycleBin, userId)
+        
+        if(!userRejoining){
+            console.log('No user found in recycle bin')
+            return null
+        }
+
+        const {username, accentColor, chats: userChats} = userRejoining
 
         // create active user and add to active users
         let activeUser = createNewActiveUser(socket.id, userId, username, accentColor, [])
         activeUsers = addUserToActiveUsers(activeUsers, activeUser)
 
-        let userChatsFromRecycleBin = getUserFromRecycleBin(recycleBin, userId).chats
 
-        for(let chatId of chatIds){
+        for(const chat of userChats){
+            let {chatId, isAdmin} = chat
             socket.join(chatId)
-            let isUserAdminOfChat = userChatsFromRecycleBin.find(chat => chat.chatId === chatId).isAdmin
-            activeUsers = addChatToActiveUser(activeUsers, userId, chatId, isUserAdminOfChat)
+            activeUsers = addChatToActiveUser(activeUsers, userId, chatId, isAdmin)
 
-            let oldMember = createNewMember(username, userId, isMemberAdmin.isAdmin, "", accentColor)
+            let oldMember = createNewMember(username, userId, isAdmin, "", accentColor)
             chats = addMemberToChat(chats, chatId, oldMember)
             
             // emit a joined message and add to the chat messages
             let rejoinMsg = createMessage(chatId, 'rejoined', username, `${username} rejoined`, accentColor)
             conversations = addMessageToConversation(conversations, rejoinMsg)
 
-            socket.to(chatId).emit(SOMEONE_REJOINED, {rejoinMsg, id:chatId, oldMember})
+            socket.to(chatId).emit(SOMEONE_REJOINED, {rejoinMsg, id:chatId, oldMember})     
         }
 
         // remove user chat from the recyclebin
@@ -419,7 +436,7 @@ io.on(CONNECTION, (socket)=>{
                     //if there are other members, send message a "member has left" msg to them
                     if(membersInChat.length > 0){ // there are other members in the chat. greater than 1 cos the user leaving counts as 1
 
-                        let leaveMsg = createMessage(chatId, 'left', user.username, `${user.username} left`, null)
+                        let leaveMsg = createMessage(chatId, 'left-unexpectedly', user.username, `${user.username} left unexpectedly`, null)
                         conversations = addMessageToConversation(conversations, leaveMsg)
 
                         socket.to(chatId).emit(SOMEONE_LEFT, {leaveMsg, id:chatId, userId:user.userId})
