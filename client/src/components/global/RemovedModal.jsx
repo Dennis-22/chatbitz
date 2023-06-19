@@ -13,10 +13,11 @@ export default function RemovedModal() {
 
     const handlePress = ()=>{
         toggleYouWereRemoved(false)
+        chatDispatch({type:chatActions.LEAVE_CHAT, payload:currentChat})
         chatDispatch({
             type:chatActions.AUTO_SET_CURRENT_CHAT, 
-            payload:{saidChat:currentChat, 
-                noChatCallback:navigate('/connect', {state:{connectType:_Connect.create}})
+            payload:{ 
+                noChatsCallback:navigate('/connect', {state:{connectType:_Connect.create}})
             }
         })
     }
