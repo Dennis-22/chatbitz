@@ -10,6 +10,7 @@ export const chatActions = {
     AUTO_SET_CURRENT_CHAT:"AUTO-SET-CURRENT-CHAT", //automatically set current chat. useful when user leave or gets removed from a chat
     ADD_CHAT:"ADD-CHAT", //add a chat id to users chats
     LEAVE_CHAT:"LEAVE-CHAT", // remove a chat id from users chat
+    LAVE_ALL_CHATS:"LEAVE-ALL-CHATS", //remove all chats from the store and storage
     ADD_MEMBER_TO_CHAT:"ADD-MEMBER-TO-CHAT",
     REMOVE_MEMBER_FROM_CHAT:"REMOVE-MEMBER-FROM-CHAT",
     ADD_MESSAGE:"ADD-MESSAGE",
