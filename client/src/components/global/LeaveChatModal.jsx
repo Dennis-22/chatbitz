@@ -5,6 +5,7 @@ import { useUserContext, useChatContext, usePlaygroundContext } from '../../util
 import { socketConstance } from '../../utils/constance'
 import { _Connect } from "../../utils/types"
 import { chatActions } from "../../utils/actions"
+import { getItemFromStorage, setItemToSessionStorage } from "../../utils/helpers"
 
 
 export default function LeaveChatModal() {
@@ -16,6 +17,8 @@ export default function LeaveChatModal() {
   const handleLeave = ()=>{
     let leaveProps = {chatId:currentChat, userId:user.id, username:user.username}
     socket?.emit(socketConstance.LEAVE_CHAT, leaveProps)
+    let updateUserChats = getItemFromStorage("Chats").filter(chatId => chatId !== currentChat)
+    setItemToSessionStorage("Chats", updateUserChats)
     chatDispatch({type:chatActions.LEAVE_CHAT, payload:currentChat})
     navigation('/connect', {state:{connectType:_Connect.create}})
   }
@@ -25,8 +28,8 @@ export default function LeaveChatModal() {
     <Modal>
       <div className={styles.container}>
         <div className={styles.content}>
-            <p className={styles.title}>Leave Chat</p>
-            <p className={styles.text}>Everyone will notice you are gone and you would have to rejoin to continue chatting here</p>
+          <p className={styles.title}>Leave Chat</p>
+          <p className={styles.text}>Everyone will notice you are gone and you would have to rejoin to continue chatting here</p>
         </div>
 
         <ModalButtons 
