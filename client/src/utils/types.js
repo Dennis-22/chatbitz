@@ -17,6 +17,13 @@ const _User = {
     accentColor:""
 }
 
+const _Chat = {
+    chats:[], 
+    currentChat:"", 
+    messages:[], 
+    peopleTyping:[]
+}
+
 /**
  * @typedef {Object} Connect
  * @property {String} create
@@ -32,4 +39,5 @@ const _Connect = {
 export {
     _User,
     _Connect,
+    _Chat
 }
