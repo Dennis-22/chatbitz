@@ -1,5 +1,8 @@
 .body{
     width:27%;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
 }
 
 
@@ -13,17 +16,17 @@
 }
 
 .chatsDisplay{
-    margin-top: 30px;
+    flex: 1;
+    margin-top: 20px;
     padding: 10px;
-
+    overflow-y: scroll;
 }
 
 .text{
     color: var(--faint);
 }
 
-.chatsWrapper{
-}
+.chatsWrapper{}
 
 .chat, .chatSelected{
     background-color: var(--glass);
@@ -67,6 +70,8 @@
 }
 
 .mobChatContent{
+    display: flex;
+    flex-direction: column;
     background-color: var(--background-color);
     width: 80%;
     height: 100%;
