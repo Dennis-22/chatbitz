@@ -1,47 +1,15 @@
+import { getItemFromStorage, setItemToSessionStorage } from "../../utils/helpers"
 import { chatActions } from "../../utils/actions"
-const {SET_CURRENT_CHAT, AUTO_SET_CURRENT_CHAT, ADD_CHAT, LEAVE_CHAT, ADD_MEMBER_TO_CHAT, 
+import { _Chat } from "../../utils/types"
+const {SET_CURRENT_CHAT, AUTO_SET_CURRENT_CHAT, ADD_CHAT, LEAVE_CHAT, LAVE_ALL_CHATS, ADD_MEMBER_TO_CHAT, 
     REMOVE_MEMBER_FROM_CHAT, ADD_MESSAGE, SOMEONE_TYPING} = chatActions
 
+
+
 const state = {
-   chats:[
-//     {id:'1', coverPhoto:'', chatName:"Hell 🔥🔥🔥", secured:{status:false, password: 'canopy'},
-//     members:[
-//         {id:'21', username: 'Jessica', admin:true, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},
-//         {id:'2', username: 'Lucy', admin:false, profilePhoto:'', accentColor:"rgb(89, 141, 29)"}, 
-//         {id:'21', username: 'Jessica', admin:true, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},
-//     ]
-// },
-// {id:'2', coverPhoto:'', chatName:"Kitchen", secured:{status:false, password: 'canopy'},
-//     members:[
-//         {id:'21', username: 'Jessica', admin:true, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},
-//         {id:'2', username: 'Lucy', admin:false, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},
-//     ]
-// },
-   ], //array of all user chats
-   currentChat:"", // id of user's current chat
-   messages:[
-    // {
-    //     chatId:'1',
-    //     messages:[
-    //         {id:'6101', userId:'21', username:'Jessica', message:'Hello everyone', time:'10:30', accentColor:"rgb(38, 40, 170)"},
-    //         {id:'104', userId:'join', username:'Cynthia', message:'Cynthia Joined', time:'10:30'},
-    //         {id:'101', userId:'101', username:'Cynthia', message:'Hello', time:'10:31', accentColor:"rgb(38, 40, 170)"},
-    //         {id:'102', userId:'1', username:'Robert', message:'How are we all doing', time:"10:31", accentColor:"rgb(89, 141, 29)"},
-    //     ],
-    // },
-    // {
-    //     chatId:'2',
-    //     messages:[
-    //         {id:'6101', userId:'21', username:'Jessica', message:'Hello everyone', time:'10:30', accentColor:"rgb(38, 40, 170)"},
-    //         {id:'104', userId:'join', username:'Cynthia', message:'Cynthia Joined', time:'10:30'},
-    //         {id:'101', userId:'101', username:'Cynthia', message:'Hello', time:'10:31', accentColor:"rgb(38, 40, 170)"},
-    //         {id:'102', userId:'1', username:'Robert', message:'How are we all doing', time:"10:31", accentColor:"rgb(89, 141, 29)"},
-    //         {id:'6101', userId:'21', username:'Jessica', message:'Hello everyone', time:'10:30', accentColor:"rgb(38, 40, 170)"},
-    //         {id:'104', userId:'join', username:'Cynthia', message:'Cynthia Joined', time:'10:30'},
-    //         {id:'101', userId:'101', username:'Cynthia', message:'Hello', time:'10:31', accentColor:"rgb(38, 40, 170)"},
-    //     ],
-    // },
-   ], // all messages of user chats
+   chats:[], //array of all user chats
+   currentChat:"1", // id of user's current chat
+   messages:[], // all messages of user chats
    peopleTyping:[], //names of people typing in the current chat
 }
 
@@ -53,19 +21,16 @@ function chatReducer(state, action){
         }
         case(AUTO_SET_CURRENT_CHAT):{
             // checks if user has more chats and set current chat to one of them or setNoChatFn to payload fn
-            const {ignoreChatId, noChatCallback} = payload
+            const {noChatsCallback} = payload
             
-            let newUserChats= state.chats.filter(chat => chat.id !== ignoreChatId)
-            let newMessages = state.messages.filter(msg => msg.chatId !== ignoreChatId)
-        
-            if(newUserChats.length > 0){
-                // set current to one of the chats
-                return {...state, chats:newUserChats, messages:newMessages, currentChat:newUserChats[0].id}
+            // user has no chats
+            if(state.chats.length === 0) {
+                if(noChatsCallback) noChatsCallback()
+                return _Chat //default state of 
             }
-            
-            // user has no chats left
-            noChatCallback()
-            return {...state, chats:[], currentChat:"", messages:[], peopleTyping:[]}
+
+            // set current to one of the chats
+            return {...state, currentChat:state.chats[0].id}
         }
         case(ADD_MESSAGE):{
             const {id, message} = payload
@@ -79,6 +44,10 @@ function chatReducer(state, action){
         case(ADD_CHAT):{
             const {chat, messages} = payload
             let chatMessages = {chatId:chat.id, messages:messages}
+
+            let chatsInStorage = getItemFromStorage("Chats") || []
+            setItemToSessionStorage('Chats', [...chatsInStorage, chat.id])
+
             return {...state,
                 currentChat:chat.id,
                 chats:[...state.chats, chat], 
@@ -86,8 +55,18 @@ function chatReducer(state, action){
             }
         }
         case(LEAVE_CHAT):{
+            // update session storage
+            let updateUserChats = getItemFromStorage("Chats").filter(chatId => chatId !== payload)
+            setItemToSessionStorage("Chats", updateUserChats)
+            // update store
             return {...state, chats:state.chats.filter(chat => chat.id !== payload)}
         }
+
+        case(LAVE_ALL_CHATS):{
+            setItemToSessionStorage("Chats", [])
+            return _Chat //default state
+        }
+
         case(ADD_MEMBER_TO_CHAT):{
             const {id, newUser, joinMsg} = payload
             
