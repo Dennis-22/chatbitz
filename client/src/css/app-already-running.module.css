@@ -1,0 +1,25 @@
+.body{
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;   
+    background-color: var(--popup-background);
+}
+
+.content{
+    width: min(95%, 400px);
+    background-color: var(--black);
+    padding: 20px;
+    border-radius: 5px;
+}
+
+.title{
+    font-size: var(--large);
+    color: var(--white-2);
+}
+
+.text{
+    margin-top: 10px;
+    color: var(--faint);
+}

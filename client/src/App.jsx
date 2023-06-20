@@ -1,10 +1,11 @@
 import {BrowserRouter as Router, Routes, Route} from 'react-router-dom'
+import {withOneTabEnforcer} from 'react-one-tab-enforcer'
 import Home from './pages/Home'
 import Connect from './pages/Connect'
 import Playground from './pages/Playground'
+import AppAlreadyRunning from './components/global/AppAlreadyRunning'
 
-export default function App() {
-  
+function App() {  
   return (
     <Router>
       <Routes>
@@ -15,3 +16,6 @@ export default function App() {
     </Router>
   )
 }
+
+
+export default withOneTabEnforcer({appName:"ChatBitz", OnlyOneTabComponent:AppAlreadyRunning})(App)
