@@ -41,7 +41,7 @@ const documentation = [
             "No email, telephone or password required.",
             "You can leave and rejoin a chat when necessary.",
             "An admin of a chat can remove any member in a chat",
-            "Once you refresh your browser, you automatically leave your current chat",
+            "Once there are no other participants in a chat with you and you refresh your browser, you automatically leave the chat and the chat gets deleted",
             "Once the last person leaves the chat, the chat is automatically deleted",
             "All messages are deleted together the chat."
         ]
