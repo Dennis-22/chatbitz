@@ -303,7 +303,7 @@ io.on(CONNECTION, (socket)=>{
 
 
         // emit a joined message and add to the chat messages
-        let joinMsg = createMessage(chatId, 'join', username, `${username} joined`, accentColor)
+        let joinMsg = createMessage("join", chatId, userId, username, `${username} joined`, accentColor)
         conversations = addMessageToConversation(conversations, joinMsg)
         
         // emit to other users someone joined with new user data
@@ -338,7 +338,7 @@ io.on(CONNECTION, (socket)=>{
             chats = addMemberToChat(chats, chatId, oldMember)
             
             // emit a joined message and add to the chat messages
-            let rejoinMsg = createMessage(chatId, 'rejoined', username, `${username} rejoined`, accentColor)
+            let rejoinMsg = createMessage('rejoined', chatId, userId, username, `${username} rejoined`, accentColor)
             conversations = addMessageToConversation(conversations, rejoinMsg)
 
             socket.to(chatId).emit(SOMEONE_REJOINED, {rejoinMsg, id:chatId, oldMember})     
@@ -364,7 +364,7 @@ io.on(CONNECTION, (socket)=>{
         let membersInChat = getMembersInAChat(chats, chatId)
         if(membersInChat.length > 0){ //if there are members in the chat
             // send a someone left message
-            let leaveMsg = createMessage(chatId, 'left', username, `${username} left`, null)
+            let leaveMsg = createMessage('left', chatId, userId, username, `${username} left`, null)
             conversations = addMessageToConversation(conversations, leaveMsg)
             socket.to(chatId).emit(SOMEONE_LEFT, {leaveMsg, id: chatId, userId})
         }else{
@@ -392,7 +392,7 @@ io.on(CONNECTION, (socket)=>{
         activeUsers = removeChatFromActiveUser(activeUsers, userId, chatId)
 
         // create a message for other members in the chat  
-        let userRemovedMsg = createMessage(chatId, 'user-removed', userRemovedName, `${adminName} removed ${userRemovedName}`, null)
+        let userRemovedMsg = createMessage('user-removed', chatId, userId, userRemovedName, `${adminName} removed ${userRemovedName}`, null)
         conversations = addMessageToConversation(conversations, userRemovedMsg)
         
         // send to every one in the chat including the admin
@@ -407,7 +407,7 @@ io.on(CONNECTION, (socket)=>{
     socket.on(SEND_MESSAGE, (msgDetails)=>{
         // add message to conversation and emit to other users
         const {chatId, userId, username, accentColor, message, time} = msgDetails
-        let newMessage = createMessage(chatId, userId, username, message, accentColor, time)
+        let newMessage = createMessage("message", chatId, userId, username, message, accentColor, time)
         conversations = addMessageToConversation(conversations, newMessage)
         socket.to(chatId).emit(RECEIVED_MESSAGE, newMessage)
     })
@@ -436,7 +436,7 @@ io.on(CONNECTION, (socket)=>{
                     //if there are other members, send message a "member has left" msg to them
                     if(membersInChat.length > 0){ // there are other members in the chat. greater than 1 cos the user leaving counts as 1
 
-                        let leaveMsg = createMessage(chatId, 'left-unexpectedly', user.username, `${user.username} left unexpectedly`, null)
+                        let leaveMsg = createMessage('left-unexpectedly', user.userId, 'left-unexpectedly', user.username, `${user.username} left unexpectedly`, null)
                         conversations = addMessageToConversation(conversations, leaveMsg)
 
                         socket.to(chatId).emit(SOMEONE_LEFT, {leaveMsg, id:chatId, userId:user.userId})

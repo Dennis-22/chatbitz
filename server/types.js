@@ -25,10 +25,10 @@ const conversations = [
     {
         chatId:'1',
         messages:[
-            {id:'6101', userId:'21', username:'Jessica', message:'Hello everyone', time:'10:30', accentColor:"rgb(38, 40, 170)"},
-            {id:'104', userId:'join', username:'Cynthia', message:'Cynthia Joined', time:'10:30'},
-            {id:'101', userId:'101', username:'Cynthia', message:'Hello', time:'10:31', accentColor:"rgb(38, 40, 170)"},
-            {id:'102', userId:'1', username:'Robert', message:'How are we all doing', time:"10:31", accentColor:"rgb(89, 141, 29)"},
+            {id:'6101', type:"message", userId:'21', username:'Jessica', message:'Hello everyone', time:'10:30', accentColor:"rgb(38, 40, 170)"},
+            {id:'104', type:"join", userId:'200', username:'Cynthia', message:'Cynthia Joined', time:'10:30'},
+            {id:'101', type:"message", userId:'101', username:'Cynthia', message:'Hello', time:'10:31', accentColor:"rgb(38, 40, 170)"},
+            {id:'102', type:"message", userId:'1', username:'Robert', message:'How are we all doing', time:"10:31", accentColor:"rgb(89, 141, 29)"},
         ],
     },
 
@@ -37,6 +37,7 @@ const conversations = [
         messages:[ //array of all the messages sent in the chat
             { //start of a message
                 id:"string, unique id of the message",
+                type:"string, the type of message. helps the client to display msg properly",
                 userId:"string, the id of the user who sent this message",
                 username:"string, the name of the user who sent the message",
                 message:"string, the text message itself",

@@ -31,8 +31,9 @@ function createNewActiveUser(socketId, userId, username, accentColor, chats){
 }
 
 // just a message being sent by a user
-function createMessage(chatId, userId, username, message, accentColor, time){
+function createMessage(type, chatId, userId, username, message, accentColor, time){
     return {
+        type,
         chatId,
         id: idGenerator(), //msgId
         userId, username, message, accentColor,

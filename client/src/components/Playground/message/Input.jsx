@@ -8,7 +8,7 @@ import styles from '../../../css/message.module.css'
 import PopupInput from './PopupInput';
 import { useAppContext, useChatContext, useUserContext } from '../../../utils/hooks';
 import {idGenerator} from '../../../utils/helpers'
-import { socketConstance, screenSizes } from '../../../utils/constance';
+import { socketConstance, screenSizes} from '../../../utils/constance';
 import { chatActions } from '../../../utils/actions';
 
 export default function Input() {
@@ -29,6 +29,7 @@ export default function Input() {
     if(!message) return null
     let msgData = {
       userId:user.id,
+      type:"message",
       username:user.username, 
       accentColor:user.accentColor,
       message, id:idGenerator(), //id will mismatch with the server but its ok

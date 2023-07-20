@@ -2,7 +2,7 @@ const screenSizes = {large: 1000, small: 770}
 
 
 // ids of messages neither user nor participants 
-const defMsgsIds = ['left', 'join', 'user-removed', 'left-unexpectedly', 'rejoined']
+const defMsgTypes = ['left', 'join', 'user-removed', 'left-unexpectedly', 'rejoined']
 
 // character limit user can input for chat name and username
 const charsAllowed = {
@@ -51,4 +51,4 @@ const socketConstance = {
 }
 
 
-export {screenSizes, accentColors, defMsgsIds, socketConstance, charsAllowed}
+export {screenSizes, accentColors, defMsgTypes, socketConstance, charsAllowed}
