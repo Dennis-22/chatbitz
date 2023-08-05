@@ -1,7 +1,7 @@
 import crypto from 'crypto'
 
 type MessageT = {
-    id:string
+    id?:string
     chatId:string
     userId:string
     username:string
@@ -11,7 +11,7 @@ type MessageT = {
     time?:string
 }
 
-type MessageType = 'left' | 'join' | 'user-removed' | 'left-unexpectedly' | 'rejoined'
+type MessageType = 'leave' | 'join' | 'user-removed' | 'left-unexpectedly' | 'rejoined'
 
 // const messages = new Map<string, MessageT>()
 
@@ -30,6 +30,13 @@ export class Message{
             return {chatId:getMessages.chatId, messages:makeMessages}
         }
         return messages.find(msg => msg.chatId === chatId)
+    }
+
+    static deleteChatMessages(chatId:string){
+        const chatMessages = messages.find(chat => chat.chatId === chatId)!
+        if(chatMessages){
+            messages.splice(messages.indexOf(chatMessages), 1)
+        }
     }
 
     /**
@@ -61,15 +68,4 @@ export class Message{
             })
         }
     }
-
-    get messages(){
-        return messages
-    }
 }
-
-// Message.setUpChatMessage("chat-id")
-// Message.addMessageToChat("chat-id", {message:"created"})
-// console.log(Message.getChatMessages("chat-id"))
-
-// console.log("-------")
-// console.log(messages)

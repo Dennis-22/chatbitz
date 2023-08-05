@@ -10,11 +10,11 @@ const chats = new Map<string, IChat>()
 // secured:{status:true, password:"canopy"}}
 // )
 
-chats.set("chat2", {chatName:"name2", 
-id:"2",
-members:[], 
-secured:{status:false, password:""}}
-)
+// chats.set("chat2", {chatName:"name2", 
+// id:"2",
+// members:[{id:"1", username:"ama", accentColor:"red", isAdmin:false}], 
+// secured:{status:false, password:""}}
+// )
 
 
 export class Chat{
@@ -67,6 +67,14 @@ export class Chat{
         chats.get(chatId)?.members.push(member)
     }
 
+    static findMemberInChat(chatId:string, memberId:string){
+        const chat = this.finChatById(chatId)
+        if(chat){
+            return chat.members.find(mem => mem.id === memberId) || null
+        }
+        return null
+    }
+
     static removeMemberFromChat(chatId:string, memberId:string){
         let chat = this.finChatById(chatId)
         if(!chat) return null
@@ -77,6 +85,3 @@ export class Chat{
     }
 
 }
-
-
-// console.log(chats)
