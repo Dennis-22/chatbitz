@@ -236,42 +236,69 @@ app.post('/api/chat/join', (req, res)=>{
 // })
 
 // api/user/get-chats/userId=userId&chats=chatId1,chatId2
-app.get('/api/user/get-chats/query', async(req,res)=>{
-    const {userId, chats:userChats} = req.query
-    let splitUserChats = userChats.split(',')
+app.get('/api/user/get-chats/query/:id', async(req,res)=>{
+    // const {userId, chats:userChats} = req.query
+    const userId = req.params.id
+    // const splitUserChats = userChats.split(',')
+    // try {
+    //     // // get user chats
+    //     let userFromRecycle = getUserFromRecycleBin(recycleBin, userId)
+    //     if(!userFromRecycle) return sendMessage(res, 204, "No chats")
+
+
+    //     // check if user is actually in the requested chatIds
+    //     let userVerifiedChats = []
+    //     for(let chatId of splitUserChats){
+    //         const chat = userFromRecycle.chats.find(chat => chat.chatId === chatId)
+    //         if(chat)userVerifiedChats.push({chatId:chat.chatId, isAdmin:chat.isAdmin})
+    //     }
+
+    //     if(userVerifiedChats.length === 0) return sendMessage(res, 204, "No chats")
+
+    //     // get each chat and messages
+    //     let userChats = []
+    //     let messages = []
+
+    //     for(let chat of userVerifiedChats){
+    //         const {chatId, isAdmin} = chat
+    //         const chatDetails = getChatById(chats, chatId)
+    //         const chatMessages = getAllMessagesOfAChat(conversations, chatId)
+            
+    //         let {userId, username, accentColor} = userFromRecycle
+           
+    //         // add user details to chat
+    //         let userDetails = createNewMember(username, userId, isAdmin, "", accentColor)
+    //         userChats.push({...chatDetails, members:[...chatDetails.members, userDetails]})
+    //         messages.push({chatId, messages:chatMessages})
+    //     }
+
+    //     sendData(res, 200, {userChats, messages})
+    // } catch (error) {
+    //     sendError(res, error, 400, 'Failed to get user chats')
+    // }
 
     try {
-        // // get user chats
-        let userFromRecycle = getUserFromRecycleBin(recycleBin, userId)
-        if(!userFromRecycle) return sendMessage(res, 204, "No chats")
+        const getUserFromRecycle = User.findUserFromBin(userId)
+        if(!getUserFromRecycle) return sendMessage(res, 204, "No chats")
 
-
-        // check if user is actually in the requested chatIds
-        let userVerifiedChats = []
-        for(let chatId of splitUserChats){
-            const chat = userFromRecycle.chats.find(chat => chat.chatId === chatId)
-            if(chat)userVerifiedChats.push({chatId:chat.chatId, isAdmin:chat.isAdmin})
-        }
-
-        if(userVerifiedChats.length === 0) return sendMessage(res, 204, "No chats")
+        // get all user chats
+        const userHasChats = getUserFromRecycle.chats
+        
+        if(!userHasChats || userHasChats.length === 0) return sendMessage(res, 204, "No chats")
 
         // get each chat and messages
         let userChats = []
         let messages = []
 
-        for(let chat of userVerifiedChats){
-            const {chatId, isAdmin} = chat
-            const chatDetails = getChatById(chats, chatId)
-            const chatMessages = getAllMessagesOfAChat(conversations, chatId)
-            
-            let {userId, username, accentColor} = userFromRecycle
-           
-            // add user details to chat
-            let userDetails = createNewMember(username, userId, isAdmin, "", accentColor)
-            userChats.push({...chatDetails, members:[...chatDetails.members, userDetails]})
-            messages.push({chatId, messages:chatMessages})
+        for(let chat of userHasChats){
+            const chatDetails = Chat.finChatById(chat.chatId)
+            const chatMessages = Message.getChatMessages(chat.chatId)
+            const {id, username, accentColor} = getUserFromRecycle
+            const member = {id, username, accentColor, isAdmin:chat.isAdmin}
+            Chat.addMemberToChat(chat.chatId, member)
+            userChats.push(chatDetails)
+            messages.push({chatId: chat.chatId, messages:chatMessages})
         }
-
         sendData(res, 200, {userChats, messages})
     } catch (error) {
         sendError(res, error, 400, 'Failed to get user chats')
@@ -451,7 +478,6 @@ io.on(CONNECTION, (socket)=>{
             if(user.chats.length > 0){
                 for(const chat of user.chats) {
                     Chat.removeMemberFromChat(chat.chatId, user.id)
-                    console.log(Chat.finChatById(chat.chatId))
                     if(Chat.finChatById(chat.chatId).members.length > 0){
                         const leaveMessage = Message.createMessage({
                             type:'left-unexpectedly',

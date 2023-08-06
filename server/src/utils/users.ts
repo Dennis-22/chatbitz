@@ -74,6 +74,10 @@ export class User{
         }
     }
 
+    static findUserFromBin(userId:string){
+        return usersBin.get(userId) || null
+    }
+
     /**
      * Add a chat to user's chat 
      */
@@ -95,6 +99,8 @@ export class User{
         }
     }
 }
+
+// console.log(User.findUserFromBin("on"))
 
 // console.log(User.findUserBySocketId("2"))
 
