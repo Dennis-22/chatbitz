@@ -2,6 +2,7 @@ const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors')
 const http = require('http');
+const crypto = require('crypto')
 const {Server} = require('socket.io')
 
 const {idGenerator, createNewChat, createNewActiveUser, createNewMember, createConversation, createMessage} = require('./utils')
@@ -18,6 +19,11 @@ const {CONNECTION, DISCONNECT, CREATE_CHAT, JOIN_CHAT, SOMEONE_JOINED, REJOIN_CH
     LEAVE_CHAT, SOMEONE_LEFT, REMOVE_MEMBER, SOMEONE_WAS_REMOVED, I_WAS_REMOVED, REMOVE_MEMBER_FAILED,
     SEND_MESSAGE, RECEIVED_MESSAGE, TYPING, PERSON_IS_TYPING
 } = require('./constance')
+
+const {Chat} = require('./utils/chats')
+const {Message} = require('./utils/messages')
+const {User} = require('./utils/users')
+
 
 const app = express()
 
@@ -96,20 +102,7 @@ let recycleBin = [];
 // activeUsers = removeChatFromActiveUser(activeUsers, "123", "3")
 // console.log(activeUsers[0].chats)
 
-// (()=>{
-//     // get userId
-//     let socketId = "1"
-//     let user = activeUsers.find((user)=> user.id === socketId)
-//     activeUsers = removeUserFromActiveUsers(activeUsers, user.userId)
 
-//     console.log('active')
-//     console.log(activeUsers)
-
-//     recycleBin = addUserToRecycleBin(recycleBin, user)
-    
-//     console.log('recycle')
-//     console.log(recycleBin[0].chats)
-// })();
 
 // Setup socket io
 const io = new Server(server, {
@@ -127,81 +120,120 @@ app.get('/', (req, res) => {
 
 //create new chat
 app.post('/api/chat/create', async(req, res)=>{
-    const {chatName, username, id, secured, accentColor, profilePhoto} = req.body
+    const {chatName, username, id, accentColor, secured} = req.body
 
     try {
-        let chatExist = chatAlreadyExist(chats, chatName)
-        if(chatExist)return sendError(res, "Chat Exists", 400, "Chat already exists. please user a different name")
+        // let chatExist = chatAlreadyExist(chats, chatName)
+        // if(chatExist)return sendError(res, "Chat Exists", 400, "Chat already exists. please user a different name")
 
-        // upload the profile images if they have one
-        let profilePhotoId = null
+        // // upload the profile images if they have one
+        // let profilePhotoId = null
 
-        if(profilePhoto){
-            profilePhotoId = idGenerator()
-            images = postImage(images, profilePhoto, profilePhotoId)
-        }
+        // if(profilePhoto){
+        //     profilePhotoId = idGenerator()
+        //     images = postImage(images, profilePhoto, profilePhotoId)
+        // }
 
-        // create new room with the admin in
-        let newChat = createNewChat(chatName, username, id, secured, accentColor, profilePhotoId)
-        chats = [...chats, newChat]
+        // // create new room with the admin in
+        // let newChat = createNewChat(chatName, username, id, secured, accentColor, profilePhotoId)
+        // chats = [...chats, newChat]
 
-        // create new conversation
-        let newConversation = createConversation(newChat.id)
-        conversations = [...conversations, newConversation]
+        // // create new conversation
+        // let newConversation = createConversation(newChat.id)
+        // conversations = [...conversations, newConversation]
 
+        // sendData(res, 201, newChat, "Chat created successfully")
+
+        // check if a chat exist with the same name
+        const existingChat = Chat.findChatByName(chatName)
+
+        if(existingChat) return sendError(res, "Chat Exists", 400, "Chat already exists. please user a different name")
+
+        const newChat = Chat.createChat(chatName, secured, id, username, accentColor)
+        Message.setUpChatMessage(newChat.id)
         sendData(res, 201, newChat, "Chat created successfully")
-
     } catch (error) {
         sendError(res, error, 404, "Failed to create chat")
     }
 })
 
-// join a chat. also sends error to user to input password if chat is locked
-app.post('/api/chat/join', async(req, res)=>{
-    const {chatName, username, id, profilePhoto, accentColor, password} = req.body
+app.post('/api/chat/join', (req, res)=>{
+    const {chatName, password, username, id, accentColor} = req.body
 
     try {
-        let chat = getChatDetails(chats, chatName)
+        const chat = Chat.findChatByName(chatName)
         if(!chat) return sendError(res, "Join Chat Failed", 404, "Sorry, chat does not exist")
-
-//       check if chat is password protected
-        let secured = chat.secured.status
-        if(secured && !password) return sendMessage(res, 204, "Provide Password")
-
-
-//       verify password if chat is password protected
-        if(secured && password){
-            let passwordIsCorrect = isChatPasswordCorrect(chat, chatName, password)
-            if(!passwordIsCorrect) return sendError(res, "Invalid Password", 400, "Invalid password")
+        
+        if(chat.secured.status & !password) {
+            return sendMessage(res, 204, "Provide Password")
         }
 
-        // they are free to join
-
-        // upload the profile images if they have one
-        let profilePhotoId = null
-
-        if(profilePhoto){
-            profilePhotoId = idGenerator()
-            images = postImage(images, profilePhoto, profilePhotoId)
+        if(chat.secured.status && password){
+            if(chat.secured.password !== password) return sendError(res, "Invalid Password", 400, "Invalid password")
         }
 
-        images = postImage(images, profilePhoto, profilePhotoId)
+        // add user to chat
+        Chat.addMemberToChat(chat.id, {
+            id, username, accentColor,
+            isAdmin:false,
+            accentColor:accentColor
+        })
 
-        let newMember = createNewMember(username, id, false, profilePhoto, accentColor)
-        chats = addMemberToChat(chats, chat.id, newMember)
-
-        // get all messages from the chat
-        let chatMessages = getAllMessagesOfAChat(conversations, chat.id)
-        let chatDetails = getChatDetails(chats, chatName)
-        let sendResults = {chatDetails, chatMessages}
-
-        sendData(res, 200, sendResults, "Chat joined successfully")
-
+        const updatedChat = Chat.finChatById(chat.id)
+        const chatMessages = Message.getChatMessages(chat.id, true) //get all messages
+        sendData(res, 200, {chatDetails:updatedChat, chatMessages:chatMessages.messages}, "Chat joined successfully")
     } catch (error) {
-        console.log(error)
         sendError(res, error, 404, "Failed to join chat")
     }
 })
+
+
+// join a chat. also sends error to user to input password if chat is locked
+// app.post('/api/chat/join', async(req, res)=>{
+//     const {chatName, username, id, profilePhoto, accentColor, password} = req.body
+
+//     try {
+//         let chat = getChatDetails(chats, chatName)
+//         if(!chat) return sendError(res, "Join Chat Failed", 404, "Sorry, chat does not exist")
+
+// //       check if chat is password protected
+//         let secured = chat.secured.status
+//         if(secured && !password) return sendMessage(res, 204, "Provide Password")
+
+
+// //       verify password if chat is password protected
+//         if(secured && password){
+//             let passwordIsCorrect = isChatPasswordCorrect(chat, chatName, password)
+//             if(!passwordIsCorrect) return sendError(res, "Invalid Password", 400, "Invalid password")
+//         }
+
+//         // they are free to join
+
+//         // upload the profile images if they have one
+//         let profilePhotoId = null
+
+//         if(profilePhoto){
+//             profilePhotoId = idGenerator()
+//             images = postImage(images, profilePhoto, profilePhotoId)
+//         }
+
+//         images = postImage(images, profilePhoto, profilePhotoId)
+
+//         let newMember = createNewMember(username, id, false, profilePhoto, accentColor)
+//         chats = addMemberToChat(chats, chat.id, newMember)
+
+//         // get all messages from the chat
+//         let chatMessages = getAllMessagesOfAChat(conversations, chat.id)
+//         let chatDetails = getChatDetails(chats, chatName)
+//         let sendResults = {chatDetails, chatMessages}
+
+//         sendData(res, 200, sendResults, "Chat joined successfully")
+
+//     } catch (error) {
+//         console.log(error)
+//         sendError(res, error, 404, "Failed to join chat")
+//     }
+// })
 
 // api/user/get-chats/userId=userId&chats=chatId1,chatId2
 app.get('/api/user/get-chats/query', async(req,res)=>{
@@ -268,47 +300,31 @@ io.on(CONNECTION, (socket)=>{
     // creating a chat
     socket.on(CREATE_CHAT, (createChatDetails)=>{
         const {chatId, userId, username, accentColor} = createChatDetails
-        socket.join(chatId)
-
-        // create active user and add to active users if user does not exist
-        let activeUserAlreadyExist = activeUsers.some(user => user.userId !== userId)
-        if(activeUserAlreadyExist){
-            activeUsers = addChatToActiveUser(activeUsers, userId, chatId, false)
-        }else{
-            // create an active user
-            let newActiveUser = createNewActiveUser(
-                socket.id, 
-                userId, username, accentColor,
-                [{chatId:chatId, isAdmin:true}] 
-            )
-            activeUsers = addUserToActiveUsers(activeUsers, newActiveUser)
-        }        
+        socket.join(chatId)        
+        User.createUser(socket.id, userId, username, accentColor, "", [{chatId, isAdmin:true}])
     })
 
     // joining a chat
     socket.on(JOIN_CHAT, (chatIdAndUserDetails)=>{
         const {chatId, userId, username, accentColor} = chatIdAndUserDetails
-        socket.join(chatId)
-
-        // create active user and add to active users if user does not exist
-        let activeUserAlreadyExist = activeUsers.some(user => user.userId === userId)
-        if(activeUserAlreadyExist){
-            activeUsers = addChatToActiveUser(activeUsers, userId, chatId, false)
-        }else{
-            let newActiveUser = createNewActiveUser(socket.id, userId, username, accentColor, 
-                [{chatId:chatId, isAdmin:false}]    
-            )
-            activeUsers = addUserToActiveUsers(activeUsers, newActiveUser)
-        }
-
-
-        // emit a joined message and add to the chat messages
-        let joinMsg = createMessage("join", chatId, userId, username, `${username} joined`, accentColor)
-        conversations = addMessageToConversation(conversations, joinMsg)
         
-        // emit to other users someone joined with new user data
-        let newUser = {username, id:userId,  profilePhoto:null, accentColor, admin:false}
-        socket.to(chatId).emit(SOMEONE_JOINED, {joinMsg, id: chatId, newUser})
+        const createUser = User.createUser(socket.id, userId, username, accentColor, "", [{isAdmin:false, chatId}])
+        User.addChatToUserChats(createUser.userId, {chatId, isAdmin:false})
+
+        socket.join(chatId)
+        
+        const joinMessage = Message.createMessage({
+            type:'join',
+            chatId,
+            username,
+            userId,
+            message:`${username} "joined"`,
+            accentColor,            
+        })
+
+        Message.addMessageToChat(chatId, joinMessage)
+        const newUser = {username, id:userId,  profilePhoto:null, accentColor, admin:false}
+        socket.to(chatId).emit(SOMEONE_JOINED, {joinMessage, id: chatId, newUser})
     })
 
     // when user refreshes the browser, the socket gets disconnected 
@@ -350,53 +366,56 @@ io.on(CONNECTION, (socket)=>{
 
     socket.on(LEAVE_CHAT, (chatIdAndUserDetails)=>{
         const {chatId, username, userId} = chatIdAndUserDetails
-        // remove user from chat
-        // remove chatId from user socket
-        // send message and emit to other members
-
-        chats = removeMemberFromChat(chats, chatId, userId)
-        
-        // remove chats from the users chats
-        activeUsers = removeChatFromActiveUser(activeUsers, userId, chatId)
+        Chat.removeMemberFromChat(chatId, userId)
+        User.removeChatFromUserChats(userId, chatId)
         socket.leave(chatId) //user sockets disconnects from the chat
 
-        // check if there is any member left in the chat and delete it
-        let membersInChat = getMembersInAChat(chats, chatId)
-        if(membersInChat.length > 0){ //if there are members in the chat
-            // send a someone left message
-            let leaveMsg = createMessage('left', chatId, userId, username, `${username} left`, null)
-            conversations = addMessageToConversation(conversations, leaveMsg)
-            socket.to(chatId).emit(SOMEONE_LEFT, {leaveMsg, id: chatId, userId})
+        const chat = Chat.finChatById(chatId)
+        if(!chat) return null
+        const chatMembers = chat.members
+        if(chatMembers.length > 0){
+            const leaveMessage = Message.createMessage({
+                type:'leave',
+                chatId,
+                username,
+                userId,
+                message:`${username} "left"`,
+                accentColor:"",      
+            })
+            Message.addMessageToChat(chatId, leaveMessage)
+            socket.to(chatId).emit(SOMEONE_LEFT, {leaveMessage, id: chatId, userId})
         }else{
-            // delete the chat, conversation and socket
-            chats = deleteChat(chats, chatId)
-            conversations = deleteConversation(conversations, chatId)
-            // socket.delete(chatId) //delete the socket room
+            Chat.deleteChat(chatId)
+            Message.deleteChatMessages(chatId)
         }
+        
     })
 
     socket.on(REMOVE_MEMBER, (props)=>{
         // check if user is an admin before they can remove a member
-        // this sends message to other users that a user has been removed
+        // this sends message to other members that a member has been removed
         const {chatId, adminId, adminName, userId} = props
 
-        // check if user is an admin
-        let isAdmin = isMemberAdmin(chats, chatId, adminId)
+        // check if member is an admin
+        const isAdmin = Chat.findMemberInChat(chatId, adminId)?.isAdmin
         if(!isAdmin) return io.to(chatId).emit(REMOVE_MEMBER_FAILED, adminId)
         
-
-        let userRemovedName = getUserNameById(chats, chatId, userId) // get the name of the user being removed
-        chats = removeMemberFromChat(chats, chatId, userId) //remove user from the chat
-
-        // remove chat from userSocket
-        activeUsers = removeChatFromActiveUser(activeUsers, userId, chatId)
-
-        // create a message for other members in the chat  
-        let userRemovedMsg = createMessage('user-removed', chatId, userId, userRemovedName, `${adminName} removed ${userRemovedName}`, null)
-        conversations = addMessageToConversation(conversations, userRemovedMsg)
+        const memberBeingRemovedName = Chat.findMemberInChat(chatId, userId) //get the name of the user being removed
+        Chat.removeMemberFromChat(chatId, userId) // remove member from chat
+        User.removeChatFromUserChats(userId, chatId) // remove chat from the user's chats
         
-        // send to every one in the chat including the admin
-        io.to(chatId).emit(SOMEONE_WAS_REMOVED, {userId, chatId, message:userRemovedMsg})
+        // send removed message to the chat
+        const removeMemberMessage = Message.createMessage({
+            type:'user-removed',
+            chatId,
+            username:memberBeingRemovedName.username,
+            userId,
+            message:`${adminName} removed ${memberBeingRemovedName.username}`,
+            accentColor:"",      
+        })
+
+        Message.addMessageToChat(chatId, removeMemberMessage)
+        io.to(chatId).emit(SOMEONE_WAS_REMOVED, {userId, chatId, message:removeMemberMessage})
     })
 
     // the person removed from a chat emits this socket to disconnect form socket 
@@ -405,11 +424,15 @@ io.on(CONNECTION, (socket)=>{
     })
 
     socket.on(SEND_MESSAGE, (msgDetails)=>{
-        // add message to conversation and emit to other users
-        const {chatId, userId, username, accentColor, message, time} = msgDetails
-        let newMessage = createMessage("message", chatId, userId, username, message, accentColor, time)
-        conversations = addMessageToConversation(conversations, newMessage)
-        socket.to(chatId).emit(RECEIVED_MESSAGE, newMessage)
+        const {id, chatId, userId, username, accentColor, message, time} = msgDetails
+        
+        const newMessage = Message.createMessage({
+            id, chatId, userId, username, accentColor, message, time,
+            type:"message", 
+        })
+        
+        Message.addMessageToChat(chatId, newMessage) //add message to chat
+        socket.to(chatId).emit(RECEIVED_MESSAGE, newMessage) //send message to members
     })
 
     socket.on(TYPING, (typingDetails)=>{
@@ -418,39 +441,38 @@ io.on(CONNECTION, (socket)=>{
     })
 
     socket.on(DISCONNECT, ()=>{
-        
-        // remove user from active users and move to recycle bin
-        let user = activeUsers.find(user => user.socketId === socket.id)
-        recycleBin = addUserToRecycleBin(recycleBin, user)
-        activeUsers = removeUserFromActiveUsers(activeUsers, user.userId)
-
-
+        //find the disconnected user
+        //remove the user from all chats
+        //if there are other members in the user's chat, send messages to other members user disconnected
+        //if there are no members, don't send any message and delete the chat
+        const user = User.findUserBySocketId(socket.id) //get the disconnected user
         if(user){
+            User.recycleUserToAndFromBin(user.id, "move to bin") //move user to recycle bin
             if(user.chats.length > 0){
-                for(const chat of user.chats){
-                    let {chatId} = chat
-                    chats = removeMemberFromChat(chats, chatId, user.userId) //remove user from chat
-
-                    let membersInChat = getMembersInAChat(chats, chatId)
-
-                    //if there are other members, send message a "member has left" msg to them
-                    if(membersInChat.length > 0){ // there are other members in the chat. greater than 1 cos the user leaving counts as 1
-
-                        let leaveMsg = createMessage('left-unexpectedly', user.userId, 'left-unexpectedly', user.username, `${user.username} left unexpectedly`, null)
-                        conversations = addMessageToConversation(conversations, leaveMsg)
-
-                        socket.to(chatId).emit(SOMEONE_LEFT, {leaveMsg, id:chatId, userId:user.userId})
-                        socket.leave(chatId)
-                    }else{ //there are no other members
-                        // delete chat and conversations
-                        chats = deleteChat(chats, chatId)
-                        conversations = deleteConversation(conversations, chatId)
+                for(const chat of user.chats) {
+                    Chat.removeMemberFromChat(chat.chatId, user.id)
+                    console.log(Chat.finChatById(chat.chatId))
+                    if(Chat.finChatById(chat.chatId).members.length > 0){
+                        const leaveMessage = Message.createMessage({
+                            type:'left-unexpectedly',
+                            chatId:chat.chatId,
+                            username:user.username,
+                            userId:user.id,
+                            message:`${user.username} "left unexpectedly"`,
+                            accentColor:"",      
+                        })
+                        Message.addMessageToChat(leaveMessage)
+                        socket.to(chat.chatId).emit(SOMEONE_LEFT, {leaveMessage, id:chat.chatId, userId:user.id})
+                        socket.leave(chat.chatId) 
+                    }else{
+                        Chat.deleteChat(chat.id)
+                        Message.deleteChatMessages(chat.id)
                     }
                 }
             }
         }
-
-        console.log(socket.id, ' disconnected')
+        
+        console.log(socket.id, 'disconnected')
     })
 }) 
 

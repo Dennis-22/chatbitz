@@ -1,7 +1,8 @@
-import { ChatMember, ActiveUser } from "../../types"
+import { ActiveUser } from "../../types"
 
 const activeUsers = new Map<string, ActiveUser>()
 const usersBin = new Map<string, ActiveUser>()
+
 
 export class User{
 
@@ -27,6 +28,15 @@ export class User{
         return user || null
     }
 
+    static findUserBySocketId(socketId:string){
+        for(let user of activeUsers){
+            if(activeUsers.get(user[0])?.socketId === socketId){
+                return activeUsers.get(user[0])
+            }
+        }
+        return null
+    }
+
     /**Get all user chats */
     static findUserChats(userId:string):null | string[]{
         let user = this.findUserById(userId)
@@ -44,21 +54,21 @@ export class User{
      * method (move from bin) - remove user from bin to active users
      * method (delete from bin) - delete user from bin
      */
-    static recycleUserToAndFromBin(userId:string, metohd:"move to bin" | "move from bin" 
+    static recycleUserToAndFromBin(userId:string, method:"move to bin" | "move from bin" 
         | "delete from bin")
     {
         let user = this.findUserById(userId)
         if(user){
-            if(metohd === "move to bin"){
+            if(method === "move to bin"){
                 usersBin.set(userId, user)
                 activeUsers.delete(userId)
             }
-            if(metohd === "move from bin"){
+            if(method === "move from bin"){
                 activeUsers.set(userId, user)
                 usersBin.delete(userId)
             }
 
-            if(metohd === "delete from bin"){
+            if(method === "delete from bin"){
                 usersBin.delete(userId)
             }
         }
@@ -86,6 +96,7 @@ export class User{
     }
 }
 
+// console.log(User.findUserBySocketId("2"))
 
 // let newUser = User.createUser("socket", "1", "Dennis", "yellow", "", [{chatId:"1", isAdmin:true}])
 // console.log('before')
