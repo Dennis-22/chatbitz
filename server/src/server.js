@@ -292,12 +292,12 @@ app.get('/api/user/get-chats/query/:id', async(req,res)=>{
 
         for(let chat of userHasChats){
             const chatDetails = Chat.finChatById(chat.chatId)
-            const chatMessages = Message.getChatMessages(chat.chatId)
+            const chatMessages = Message.getChatMessages(chat.chatId, true)
             const {id, username, accentColor} = getUserFromRecycle
             const member = {id, username, accentColor, isAdmin:chat.isAdmin}
             Chat.addMemberToChat(chat.chatId, member)
             userChats.push(chatDetails)
-            messages.push({chatId: chat.chatId, messages:chatMessages})
+            messages.push(chatMessages)
         }
         sendData(res, 200, {userChats, messages})
     } catch (error) {
@@ -358,37 +358,61 @@ io.on(CONNECTION, (socket)=>{
     // rejoin chats via this socket.
     socket.on(REJOIN_CHAT, (userId)=>{
         // get the user rejoining from the recycle bin
-        const userRejoining = getUserFromRecycleBin(recycleBin, userId)
+        // const userRejoining = getUserFromRecycleBin(recycleBin, userId)
         
-        if(!userRejoining){
+        // if(!userRejoining){
+        //     console.log('No user found in recycle bin')
+        //     return null
+        // }
+
+        // const {username, accentColor, chats: userChats} = userRejoining
+
+        // create active user and add to active users
+        // let activeUser = createNewActiveUser(socket.id, userId, username, accentColor, [])
+        // activeUsers = addUserToActiveUsers(activeUsers, activeUser)
+
+        // for(const chat of userChats){
+        //     let {chatId, isAdmin} = chat
+        //     socket.join(chatId)
+        //     activeUsers = addChatToActiveUser(activeUsers, userId, chatId, isAdmin)
+
+        //     let oldMember = createNewMember(username, userId, isAdmin, "", accentColor)
+        //     chats = addMemberToChat(chats, chatId, oldMember)
+            
+        //     // emit a joined message and add to the chat messages
+        //     let rejoinMsg = createMessage('rejoined', chatId, userId, username, `${username} rejoined`, accentColor)
+        //     conversations = addMessageToConversation(conversations, rejoinMsg)
+
+        //     socket.to(chatId).emit(SOMEONE_REJOINED, {rejoinMsg, id:chatId, oldMember})     
+        // }
+
+        // // remove user chat from the recyclebin
+        // recycleBin = removeUserFromRecycleBin(recycleBin, userId)
+
+        // get the user rejoining from the recycle bin
+        const user = User.findUserFromBin(userId)
+        if(!user){
             console.log('No user found in recycle bin')
             return null
         }
-
-        const {username, accentColor, chats: userChats} = userRejoining
-
-        // create active user and add to active users
-        let activeUser = createNewActiveUser(socket.id, userId, username, accentColor, [])
-        activeUsers = addUserToActiveUsers(activeUsers, activeUser)
-
-
-        for(const chat of userChats){
-            let {chatId, isAdmin} = chat
+        const {id, username, chats, accentColor} = user    
+        for(const chat of chats){
+            const {chatId, isAdmin} = chat
             socket.join(chatId)
-            activeUsers = addChatToActiveUser(activeUsers, userId, chatId, isAdmin)
-
-            let oldMember = createNewMember(username, userId, isAdmin, "", accentColor)
-            chats = addMemberToChat(chats, chatId, oldMember)
-            
-            // emit a joined message and add to the chat messages
-            let rejoinMsg = createMessage('rejoined', chatId, userId, username, `${username} rejoined`, accentColor)
-            conversations = addMessageToConversation(conversations, rejoinMsg)
-
-            socket.to(chatId).emit(SOMEONE_REJOINED, {rejoinMsg, id:chatId, oldMember})     
+            Chat.addMemberToChat(chatId, {id, username, isAdmin, accentColor})
+            const rejoinMessage = Message.createMessage({
+                type:'rejoined',
+                chatId,
+                username,
+                userId:id,
+                message:`${username} "rejoined"`,
+                accentColor,
+            })
+            Message.addMessageToChat(chatId, rejoinMessage)
+            const memberData = {id, username, accentColor, isAdmin}
+            socket.to(chatId).emit(SOMEONE_REJOINED, {rejoinMessage, id:chatId, memberData})     
         }
-
-        // remove user chat from the recyclebin
-        recycleBin = removeUserFromRecycleBin(recycleBin, userId)
+        User.recycleUserToAndFromBin(id, "move from bin")
     })
 
     socket.on(LEAVE_CHAT, (chatIdAndUserDetails)=>{
