@@ -15,10 +15,11 @@ export class User{
 
     //TODO: check if user already exits in active users or recycle bin  
     static createUser(socketId:string, id:string, username:string, accentColor:string,
-        chats:{chatId:string, isAdmin:boolean}[]):{userId:string, username:string}
+        // chats:{chatId:string, isAdmin:boolean}[]):{userId:string, username:string}
+        ):{userId:string, username:string}
     {
         if(activeUsers.has(id)) return {userId:id, username}
-        activeUsers.set(id, {socketId, id, username, accentColor, chats})
+        activeUsers.set(id, {socketId, id, username, accentColor, chats:[]})
         return {userId:id, username}
     }
 
@@ -121,10 +122,11 @@ export class User{
 
 // console.log(User.findUserBySocketId("2"))
 
-// let newUser = User.createUser("socket", "1", "Dennis", "yellow", [{chatId:"1", isAdmin:true}])
+// let newUser = User.createUser("socket", "1", "Dennis", "yellow")
 // User.recycleUserToAndFromBin(newUser.userId, "move to bin")
 // console.log(User.findUserById(newUser.userId, "bin"))
 // User.changeSocketId(newUser.userId, "1020")
+// User.addChatToUserChats(newUser.userId, {chatId:"3", isAdmin:false})
 // console.log(User.findUserById(newUser.userId))
 
 // console.log('before')

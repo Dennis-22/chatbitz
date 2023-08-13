@@ -282,19 +282,18 @@ app.get('/api/user/rejoin-chats/:id', async(req,res)=>{
 
         // get all user chats
         const userHasChats = getUserFromRecycle.chats
-        
         if(!userHasChats || userHasChats.length === 0) return sendMessage(res, 204, "No chats")
 
         // get each chat and messages
         let userChats = []
         let messages = []
 
-        for(let chat of userHasChats){
-            const chatDetails = Chat.finChatById(chat.chatId)
-            const chatMessages = Message.getChatMessages(chat.chatId, true)
+        for(let {chatId, isAdmin} of userHasChats){
+            const chatDetails = Chat.finChatById(chatId)
+            const chatMessages = Message.getChatMessages(chatId, true)
             const {id, username, accentColor} = getUserFromRecycle
-            const member = {id, username, accentColor, isAdmin:chat.isAdmin}
-            Chat.addMemberToChat(chat.chatId, member)
+            const member = {id, username, accentColor, isAdmin}
+            Chat.addMemberToChat(chatId, member)
             userChats.push(chatDetails)
             messages.push(chatMessages)
         }
@@ -305,10 +304,9 @@ app.get('/api/user/rejoin-chats/:id', async(req,res)=>{
 })
 
 app.get('/api/chat/messages/:chatId', (req, res)=>{
-   
     const {chatId} = req.params
     try {
-        let messages = getAllMessagesOfAChat(conversations, chatId)
+        const messages = Message.getChatMessages(chatId, true)
         sendData(res, 200, messages)
     } catch (error) {
         sendError(res, error, 400, 'Failed to get chat messages')
@@ -327,14 +325,15 @@ io.on(CONNECTION, (socket)=>{
     socket.on(CREATE_CHAT, (createChatDetails)=>{
         const {chatId, userId, username, accentColor} = createChatDetails
         socket.join(chatId)        
-        User.createUser(socket.id, userId, username, accentColor, [{chatId, isAdmin:true}])
+        const createUser = User.createUser(socket.id, userId, username, accentColor)
+        User.addChatToUserChats(createUser.userId, {chatId, isAdmin:true})
     })
 
     // joining a chat
     socket.on(JOIN_CHAT, (chatIdAndUserDetails)=>{
         const {chatId, userId, username, accentColor} = chatIdAndUserDetails
         
-        const createUser = User.createUser(socket.id, userId, username, accentColor, [{isAdmin:false, chatId}])
+        const createUser = User.createUser(socket.id, userId, username, accentColor)
         User.addChatToUserChats(createUser.userId, {chatId, isAdmin:false})
 
         socket.join(chatId)
@@ -393,10 +392,6 @@ io.on(CONNECTION, (socket)=>{
         User.recycleUserToAndFromBin(userId, "move from bin")
         const user = User.findUserById(userId)
 
-        console.log("RECYCLED USER")
-        console.log(user)
-        console.log("------------")
-
         if(!user){
             console.log('No user found in recycle bin')
             return null
@@ -411,7 +406,7 @@ io.on(CONNECTION, (socket)=>{
                 chatId,
                 username,
                 userId:id,
-                message:`${username} "rejoined"`,
+                message:`${username} rejoined`,
                 accentColor,
             })
             Message.addMessageToChat(chatId, rejoinMessage)
@@ -419,13 +414,6 @@ io.on(CONNECTION, (socket)=>{
             socket.to(chatId).emit(SOMEONE_REJOINED, {rejoinMessage, id:chatId, memberData})
         }
 
-        // add chats to user chats
-        // This is isolated from the for loop above to prevent infinite looop
-        for(const {chatId, isAdmin} of chatInfoToAddLater){
-            User.addChatToUserChats(id, {chatId, isAdmin})
-        }
-
-        console.log("NEW SOCKET", socket.id)
         User.changeSocketId(id, socket.id) //update user socket id
     })
 
@@ -444,7 +432,7 @@ io.on(CONNECTION, (socket)=>{
                 chatId,
                 username,
                 userId,
-                message:`${username} "left"`,
+                message:`${username} left`,
                 accentColor:"",      
             })
             Message.addMessageToChat(chatId, leaveMessage)
@@ -515,14 +503,13 @@ io.on(CONNECTION, (socket)=>{
             if(user.chats.length > 0){
                 for(const chat of user.chats) {
                     Chat.removeMemberFromChat(chat.chatId, user.id)
-                    User.removeChatFromUserChats(user.id, chat.chatId)
                     if(Chat.finChatById(chat.chatId).members.length > 0){
                         const leaveMessage = Message.createMessage({
                             type:'left-unexpectedly',
                             chatId:chat.chatId,
                             username:user.username,
                             userId:user.id,
-                            message:`${user.username} "left unexpectedly"`,
+                            message:`${user.username} left unexpectedly`,
                             accentColor:"",      
                         })
                         Message.addMessageToChat(chat.chatId, leaveMessage)
