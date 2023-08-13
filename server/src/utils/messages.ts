@@ -23,11 +23,7 @@ export class Message{
         const getMessages = messages.find(msg => msg.chatId === chatId)!
         if(sendingToClientSide){
             // Set cannot be sent via api so make messages to an array
-            const makeMessages = []
-            for(let msg of getMessages.messages){
-                makeMessages.push(msg)
-            }
-            return {chatId:getMessages.chatId, messages:makeMessages}
+            return {chatId:getMessages.chatId, messages:Array.from(getMessages.messages)}
         }
         return messages.find(msg => msg.chatId === chatId)
     }

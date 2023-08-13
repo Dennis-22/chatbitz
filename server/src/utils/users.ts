@@ -12,7 +12,9 @@ export class User{
      * Creates a user and add to active users
      * Returns username and id
      */
-    static createUser(socketId:string, id:string, username:string, accentColor:string, profilePhoto:string, 
+
+    //TODO: check if user already exits in active users or recycle bin  
+    static createUser(socketId:string, id:string, username:string, accentColor:string,
         chats:{chatId:string, isAdmin:boolean}[]):{userId:string, username:string}
     {
         if(activeUsers.has(id)) return {userId:id, username}
@@ -23,9 +25,10 @@ export class User{
     /**
      * Find a user by id in active users
      */
-    static findUserById(userId:string):ActiveUser | null{
-        let user = activeUsers.get(userId)
-        return user || null
+    static findUserById(userId:string, whereToCheck?:"active"|"bin"):ActiveUser | null{
+        const checkFrom = whereToCheck || "active"
+        if(checkFrom === "bin") return usersBin.get(userId) || null
+        return activeUsers.get(userId) || null
     }
 
     static findUserBySocketId(socketId:string){
@@ -36,6 +39,7 @@ export class User{
         }
         return null
     }
+
 
     /**Get all user chats */
     static findUserChats(userId:string):null | string[]{
@@ -57,21 +61,34 @@ export class User{
     static recycleUserToAndFromBin(userId:string, method:"move to bin" | "move from bin" 
         | "delete from bin")
     {
-        let user = this.findUserById(userId)
-        if(user){
-            if(method === "move to bin"){
-                usersBin.set(userId, user)
-                activeUsers.delete(userId)
-            }
-            if(method === "move from bin"){
+        if(method === "move from bin"){
+            let user = this.findUserById(userId, "bin")
+            if(user){
                 activeUsers.set(userId, user)
                 usersBin.delete(userId)
             }
+        }
 
-            if(method === "delete from bin"){
-                usersBin.delete(userId)
+        if(method === "move to bin"){
+            const user = this.findUserById(userId, "active")
+            if(user){
+                usersBin.set(userId, user)
+                activeUsers.delete(userId)
             }
         }
+
+        if(method === "delete from bin"){
+            usersBin.delete(userId)
+        }
+    }
+
+    /**
+     * Change the user's socket id
+     * Useful when moving user from recycle back to active users
+     */
+    static changeSocketId(userId:string, newSocketId:string){
+        const user = this.findUserById(userId)
+        if(user)user.socketId = newSocketId
     }
 
     static findUserFromBin(userId:string){
@@ -104,7 +121,12 @@ export class User{
 
 // console.log(User.findUserBySocketId("2"))
 
-// let newUser = User.createUser("socket", "1", "Dennis", "yellow", "", [{chatId:"1", isAdmin:true}])
+// let newUser = User.createUser("socket", "1", "Dennis", "yellow", [{chatId:"1", isAdmin:true}])
+// User.recycleUserToAndFromBin(newUser.userId, "move to bin")
+// console.log(User.findUserById(newUser.userId, "bin"))
+// User.changeSocketId(newUser.userId, "1020")
+// console.log(User.findUserById(newUser.userId))
+
 // console.log('before')
 // console.log(activeUsers)
 

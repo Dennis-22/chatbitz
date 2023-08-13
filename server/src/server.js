@@ -236,8 +236,7 @@ app.post('/api/chat/join', (req, res)=>{
 // })
 
 // api/user/get-chats/userId=userId&chats=chatId1,chatId2
-app.get('/api/user/get-chats/query/:id', async(req,res)=>{
-    // const {userId, chats:userChats} = req.query
+app.get('/api/user/rejoin-chats/:id', async(req,res)=>{
     const userId = req.params.id
     // const splitUserChats = userChats.split(',')
     // try {
@@ -328,14 +327,14 @@ io.on(CONNECTION, (socket)=>{
     socket.on(CREATE_CHAT, (createChatDetails)=>{
         const {chatId, userId, username, accentColor} = createChatDetails
         socket.join(chatId)        
-        User.createUser(socket.id, userId, username, accentColor, "", [{chatId, isAdmin:true}])
+        User.createUser(socket.id, userId, username, accentColor, [{chatId, isAdmin:true}])
     })
 
     // joining a chat
     socket.on(JOIN_CHAT, (chatIdAndUserDetails)=>{
         const {chatId, userId, username, accentColor} = chatIdAndUserDetails
         
-        const createUser = User.createUser(socket.id, userId, username, accentColor, "", [{isAdmin:false, chatId}])
+        const createUser = User.createUser(socket.id, userId, username, accentColor, [{isAdmin:false, chatId}])
         User.addChatToUserChats(createUser.userId, {chatId, isAdmin:false})
 
         socket.join(chatId)
@@ -390,16 +389,23 @@ io.on(CONNECTION, (socket)=>{
         // recycleBin = removeUserFromRecycleBin(recycleBin, userId)
 
         // get the user rejoining from the recycle bin
-        const user = User.findUserFromBin(userId)
+        // const user = User.findUserFromBin(userId)
+        User.recycleUserToAndFromBin(userId, "move from bin")
+        const user = User.findUserById(userId)
+
+        console.log("RECYCLED USER")
+        console.log(user)
+        console.log("------------")
+
         if(!user){
             console.log('No user found in recycle bin')
             return null
         }
-        const {id, username, chats, accentColor} = user    
-        for(const chat of chats){
-            const {chatId, isAdmin} = chat
+        const {id, username, chats, accentColor} = user
+        const chatInfoToAddLater = [] //store user chat ids here and 
+        for(const {chatId, isAdmin} of chats){
             socket.join(chatId)
-            Chat.addMemberToChat(chatId, {id, username, isAdmin, accentColor})
+            chatInfoToAddLater.push({chatId, isAdmin}) //add chat id and is admin to loop through later
             const rejoinMessage = Message.createMessage({
                 type:'rejoined',
                 chatId,
@@ -410,9 +416,17 @@ io.on(CONNECTION, (socket)=>{
             })
             Message.addMessageToChat(chatId, rejoinMessage)
             const memberData = {id, username, accentColor, isAdmin}
-            socket.to(chatId).emit(SOMEONE_REJOINED, {rejoinMessage, id:chatId, memberData})     
+            socket.to(chatId).emit(SOMEONE_REJOINED, {rejoinMessage, id:chatId, memberData})
         }
-        User.recycleUserToAndFromBin(id, "move from bin")
+
+        // add chats to user chats
+        // This is isolated from the for loop above to prevent infinite looop
+        for(const {chatId, isAdmin} of chatInfoToAddLater){
+            User.addChatToUserChats(id, {chatId, isAdmin})
+        }
+
+        console.log("NEW SOCKET", socket.id)
+        User.changeSocketId(id, socket.id) //update user socket id
     })
 
     socket.on(LEAVE_CHAT, (chatIdAndUserDetails)=>{
@@ -498,10 +512,10 @@ io.on(CONNECTION, (socket)=>{
         //if there are no members, don't send any message and delete the chat
         const user = User.findUserBySocketId(socket.id) //get the disconnected user
         if(user){
-            User.recycleUserToAndFromBin(user.id, "move to bin") //move user to recycle bin
             if(user.chats.length > 0){
                 for(const chat of user.chats) {
                     Chat.removeMemberFromChat(chat.chatId, user.id)
+                    User.removeChatFromUserChats(user.id, chat.chatId)
                     if(Chat.finChatById(chat.chatId).members.length > 0){
                         const leaveMessage = Message.createMessage({
                             type:'left-unexpectedly',
@@ -511,15 +525,16 @@ io.on(CONNECTION, (socket)=>{
                             message:`${user.username} "left unexpectedly"`,
                             accentColor:"",      
                         })
-                        Message.addMessageToChat(leaveMessage)
+                        Message.addMessageToChat(chat.chatId, leaveMessage)
                         socket.to(chat.chatId).emit(SOMEONE_LEFT, {leaveMessage, id:chat.chatId, userId:user.id})
-                        socket.leave(chat.chatId) 
+                        socket.leave(chat.chatId)
                     }else{
                         Chat.deleteChat(chat.id)
                         Message.deleteChatMessages(chat.id)
                     }
                 }
             }
+            User.recycleUserToAndFromBin(user.id, "move to bin") //move user to recycle bin
         }
         
         console.log(socket.id, 'disconnected')
