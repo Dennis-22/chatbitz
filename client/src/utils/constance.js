@@ -2,7 +2,7 @@ const screenSizes = {large: 1000, small: 770}
 
 
 // ids of messages neither user nor participants 
-const defMsgTypes = ['left', 'join', 'user-removed', 'left-unexpectedly', 'rejoined']
+const defMsgTypes = ['leave', 'join', 'user-removed', 'left-unexpectedly', 'rejoined']
 
 // character limit user can input for chat name and username
 const charsAllowed = {

@@ -8,8 +8,6 @@ export default function Messages() {
   const messages = chatState.messages.find(msg=> msg.chatId === chatState.currentChat).messages
   const bottomRef = useRef(null);
 
-  console.log(messages)
-
   useEffect(() => {
     // 👇️ scroll to bottom every time messages change
     bottomRef.current?.scrollIntoView({behavior: 'smooth'});

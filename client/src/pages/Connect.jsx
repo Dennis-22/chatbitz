@@ -95,7 +95,6 @@ export default function Connect(){
            
             let requestStatus = request.status
             let joinedChat = request.data.data
-        
 
             // provide password
             if(requestStatus === 204){

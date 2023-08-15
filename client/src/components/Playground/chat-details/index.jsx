@@ -22,7 +22,7 @@ export default function ChatDetails(){
     )
 
     // is user an admin of the chat
-    const isUserAnAdmin = () => members.find(mem => mem.id === user.id)?.admin || false
+    const isUserAnAdmin = () => members.find(mem => mem.id === user.id)?.isAdmin || false
     
     const canUserRemoveOtherUser = (memberId)=>{
         // if the member id is not the same as userId and the member is an admin

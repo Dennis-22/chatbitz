@@ -68,7 +68,7 @@ function chatReducer(state, action){
         }
 
         case(ADD_MEMBER_TO_CHAT):{
-            const {id, newUser, joinMsg} = payload
+            const {id, newUser, joinMessage} = payload
             
             // add member to the chats
             let newChats = state.chats.map((chat) => {
@@ -81,7 +81,7 @@ function chatReducer(state, action){
             // add message to messages
             let newMessages = state.messages.map((msg) => {
                 if(msg.chatId === id){
-                    return {...msg, messages:[...msg.messages, joinMsg]}
+                    return {...msg, messages:[...msg.messages, joinMessage]}
                 }
                 return msg
             })
@@ -89,7 +89,7 @@ function chatReducer(state, action){
             return {...state, chats:newChats, messages:newMessages}
         }
         case(REMOVE_MEMBER_FROM_CHAT):{
-            const {id, userId, leaveMsg} = payload
+            const {id, userId, leaveMessage} = payload
 
             // remove user from the chat
             let newChats = state.chats.map((chat) => {
@@ -102,7 +102,7 @@ function chatReducer(state, action){
             // add message to chat
             let newMessages = state.messages.map((msg) => {
                 if(msg.chatId === id){
-                    return {...msg, messages:[...msg.messages, leaveMsg]}
+                    return {...msg, messages:[...msg.messages, leaveMessage]}
                 }
                 return msg
             })
