@@ -1,19 +1,10 @@
+const http = require('http');
 const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors')
-const http = require('http');
-const crypto = require('crypto')
 const {Server} = require('socket.io')
 
-const {idGenerator, createNewChat, createNewActiveUser, createNewMember, createConversation, createMessage} = require('./utils')
 const {sendMessage, sendData, sendError} = require('./response')
-
-const {chatAlreadyExist, getChatName, getChatDetails, getChatById, isChatPasswordCorrect, addMemberToChat,
-  getMembersInAChat, isUserAMemberOfChat, getUserChats, addUserToRecycleBin, getUserFromRecycleBin, removeUserFromRecycleBin,
-  getChatMemberById, isMemberAdmin, getUserNameById, removeMemberFromChat, deleteChat, deleteChatWithNotMembers, deleteConversation,
-    addMessageToConversation, getAllMessagesOfAChat, postImage, 
-    addUserToActiveUsers, addChatToActiveUser, removeUserFromActiveUsers, removeChatFromActiveUser
-} = require('./helpers')
 
 const {CONNECTION, DISCONNECT, CREATE_CHAT, JOIN_CHAT, SOMEONE_JOINED, REJOIN_CHAT, SOMEONE_REJOINED,
     LEAVE_CHAT, SOMEONE_LEFT, REMOVE_MEMBER, SOMEONE_WAS_REMOVED, I_WAS_REMOVED, REMOVE_MEMBER_FAILED,
@@ -28,81 +19,20 @@ const {User} = require('./utils/users')
 const app = express()
 
 // Cross Origin Resources Sharing
-const whiteList = ["http://localhost:5173"]
-// app.use(cors({
-//     origin: (origin, callback) => {
-//         if(whiteList.includes(origin)) callback(null, true)
-//         else callback(true, new Error("Not allowed by cors"))
-//     },
-//     optionsSuccessStatus: 200
-// }))
+const whiteList = ["http://localhost:5173", "https://chatbitz.netlify.app"]
+app.use(cors({
+    origin: (origin, callback) => {
+        if(whiteList.includes(origin)) callback(null, true)
+        else callback(true, new Error("Not allowed by cors"))
+    },
+    optionsSuccessStatus: 200
+}))
 app.use(cors())
 app.use(morgan('tiny'))
 app.use(express.json({limit:'30mb', extended:true}))
 const server = http.createServer(app)
 
 const PORT = process.env.port || 4000
-
-
-// let chats = []
-let conversations = []
-
-let chats = [
-    // {id:'1', coverPhoto:'', chatName:"Hell 🔥🔥🔥", secured:{status:false, password: 'canopy'},
-    //     members:[
-    //         {id:'21', username: 'Jessica', admin:true, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},
-    //         {id:'li56tr85ae604cnpud', username: 'Lucy', admin:false, profilePhoto:'', accentColor:"rgb(89, 141, 29)"}, 
-    //         {id:'212', username: 'Jessica', admin:true, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},
-    //     ]
-    // },
-    // {id:'2', coverPhoto:'', chatName:"Kitchen", secured:{status:false, password: 'canopy'},
-    //     members:[
-    //         {id:'21', username: 'Jessica', admin:true, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},
-    //         {id:'li56tr85ae604cnpud', username: 'Lucy', admin:false, profilePhoto:'', accentColor:"rgb(89, 141, 29)"},
-    //     ]
-    // },
-]
-
-// let conversations = [
-//     {
-//         chatId:'1',
-//         messages:[
-//             {id:'6101', userId:'21', username:'Jessica', message:'Hello everyone', time:'10:30', accentColor:"rgb(38, 40, 170)"},
-//             {id:'104', userId:'join', username:'Cynthia', message:'Cynthia Joined', time:'10:30'},
-//             {id:'101', userId:'101', username:'Cynthia', message:'Hello', time:'10:31', accentColor:"rgb(38, 40, 170)"},
-//             {id:'102', userId:'1', username:'Robert', message:'How are we all doing', time:"10:31", accentColor:"rgb(89, 141, 29)"},
-//         ],
-//     },
-//     {
-//         chatId:'2',
-//         messages:[
-//             {id:'6101', userId:'21', username:'Jessica', message:'Hello everyone', time:'10:30', accentColor:"rgb(38, 40, 170)"},
-//             {id:'104', userId:'join', username:'Cynthia', message:'Cynthia Joined', time:'10:30'},
-//             {id:'101', userId:'101', username:'Cynthia', message:'Hello', time:'10:31', accentColor:"rgb(38, 40, 170)"},
-//             {id:'102', userId:'1', username:'Robert', message:'How are we all doing', time:"10:31", accentColor:"rgb(89, 141, 29)"},
-//             {id:'6101', userId:'21', username:'Jessica', message:'Hello everyone', time:'10:30', accentColor:"rgb(38, 40, 170)"},
-//             {id:'104', userId:'join', username:'Cynthia', message:'Cynthia Joined', time:'10:30'},
-//             {id:'101', userId:'101', username:'Cynthia', message:'Hello', time:'10:31', accentColor:"rgb(38, 40, 170)"},
-//         ],
-//     },
-// ]
-let images = [] //not fully implemented yet
-let activeUsers = []
-let recycleBin = [];
-
-// console.log(getUserFromRecycleBin(recycleBin, "123").chats)
-
-// console.log("before", activeUsers)
-// console.log(activeUsers)
-// console.log("after", activeUsers)
-// const newUser = createNewActiveUser("sock", "123", "ama", "yellow", [{chatId:'3', isAdmin:true}])
-// activeUsers = addUserToActiveUsers(activeUsers, newUser)
-// activeUsers = addChatToActiveUser(activeUsers, "123", "chatId", false)
-// console.log(activeUsers[0].chats)
-// activeUsers = removeChatFromActiveUser(activeUsers, "123", "3")
-// console.log(activeUsers[0].chats)
-
-
 
 // Setup socket io
 const io = new Server(server, {
@@ -115,7 +45,7 @@ const io = new Server(server, {
 
 
 app.get('/', (req, res) => {
-    res.send('ChatBitz Server 1.5');
+    res.send('ChatBitz Server 2');
 });
 
 //create new chat
@@ -123,27 +53,6 @@ app.post('/api/chat/create', async(req, res)=>{
     const {chatName, username, id, accentColor, secured} = req.body
 
     try {
-        // let chatExist = chatAlreadyExist(chats, chatName)
-        // if(chatExist)return sendError(res, "Chat Exists", 400, "Chat already exists. please user a different name")
-
-        // // upload the profile images if they have one
-        // let profilePhotoId = null
-
-        // if(profilePhoto){
-        //     profilePhotoId = idGenerator()
-        //     images = postImage(images, profilePhoto, profilePhotoId)
-        // }
-
-        // // create new room with the admin in
-        // let newChat = createNewChat(chatName, username, id, secured, accentColor, profilePhotoId)
-        // chats = [...chats, newChat]
-
-        // // create new conversation
-        // let newConversation = createConversation(newChat.id)
-        // conversations = [...conversations, newConversation]
-
-        // sendData(res, 201, newChat, "Chat created successfully")
-
         // check if a chat exist with the same name
         const existingChat = Chat.findChatByName(chatName)
 
@@ -157,6 +66,7 @@ app.post('/api/chat/create', async(req, res)=>{
     }
 })
 
+// join a chat. also sends error to user to input password if chat is locked
 app.post('/api/chat/join', (req, res)=>{
     const {chatName, password, username, id, accentColor} = req.body
 
@@ -164,9 +74,7 @@ app.post('/api/chat/join', (req, res)=>{
         const chat = Chat.findChatByName(chatName)
         if(!chat) return sendError(res, "Join Chat Failed", 404, "Sorry, chat does not exist")
         
-        if(chat.secured.status & !password) {
-            return sendMessage(res, 204, "Provide Password")
-        }
+        if(chat.secured.status & !password) return sendMessage(res, 204, "Provide Password")
 
         if(chat.secured.status && password){
             if(chat.secured.password !== password) return sendError(res, "Invalid Password", 400, "Invalid password")
@@ -188,93 +96,9 @@ app.post('/api/chat/join', (req, res)=>{
 })
 
 
-// join a chat. also sends error to user to input password if chat is locked
-// app.post('/api/chat/join', async(req, res)=>{
-//     const {chatName, username, id, profilePhoto, accentColor, password} = req.body
-
-//     try {
-//         let chat = getChatDetails(chats, chatName)
-//         if(!chat) return sendError(res, "Join Chat Failed", 404, "Sorry, chat does not exist")
-
-// //       check if chat is password protected
-//         let secured = chat.secured.status
-//         if(secured && !password) return sendMessage(res, 204, "Provide Password")
-
-
-// //       verify password if chat is password protected
-//         if(secured && password){
-//             let passwordIsCorrect = isChatPasswordCorrect(chat, chatName, password)
-//             if(!passwordIsCorrect) return sendError(res, "Invalid Password", 400, "Invalid password")
-//         }
-
-//         // they are free to join
-
-//         // upload the profile images if they have one
-//         let profilePhotoId = null
-
-//         if(profilePhoto){
-//             profilePhotoId = idGenerator()
-//             images = postImage(images, profilePhoto, profilePhotoId)
-//         }
-
-//         images = postImage(images, profilePhoto, profilePhotoId)
-
-//         let newMember = createNewMember(username, id, false, profilePhoto, accentColor)
-//         chats = addMemberToChat(chats, chat.id, newMember)
-
-//         // get all messages from the chat
-//         let chatMessages = getAllMessagesOfAChat(conversations, chat.id)
-//         let chatDetails = getChatDetails(chats, chatName)
-//         let sendResults = {chatDetails, chatMessages}
-
-//         sendData(res, 200, sendResults, "Chat joined successfully")
-
-//     } catch (error) {
-//         console.log(error)
-//         sendError(res, error, 404, "Failed to join chat")
-//     }
-// })
-
 // api/user/get-chats/userId=userId&chats=chatId1,chatId2
 app.get('/api/user/rejoin-chats/:id', async(req,res)=>{
     const userId = req.params.id
-    // const splitUserChats = userChats.split(',')
-    // try {
-    //     // // get user chats
-    //     let userFromRecycle = getUserFromRecycleBin(recycleBin, userId)
-    //     if(!userFromRecycle) return sendMessage(res, 204, "No chats")
-
-
-    //     // check if user is actually in the requested chatIds
-    //     let userVerifiedChats = []
-    //     for(let chatId of splitUserChats){
-    //         const chat = userFromRecycle.chats.find(chat => chat.chatId === chatId)
-    //         if(chat)userVerifiedChats.push({chatId:chat.chatId, isAdmin:chat.isAdmin})
-    //     }
-
-    //     if(userVerifiedChats.length === 0) return sendMessage(res, 204, "No chats")
-
-    //     // get each chat and messages
-    //     let userChats = []
-    //     let messages = []
-
-    //     for(let chat of userVerifiedChats){
-    //         const {chatId, isAdmin} = chat
-    //         const chatDetails = getChatById(chats, chatId)
-    //         const chatMessages = getAllMessagesOfAChat(conversations, chatId)
-            
-    //         let {userId, username, accentColor} = userFromRecycle
-           
-    //         // add user details to chat
-    //         let userDetails = createNewMember(username, userId, isAdmin, "", accentColor)
-    //         userChats.push({...chatDetails, members:[...chatDetails.members, userDetails]})
-    //         messages.push({chatId, messages:chatMessages})
-    //     }
-
-    //     sendData(res, 200, {userChats, messages})
-    // } catch (error) {
-    //     sendError(res, error, 400, 'Failed to get user chats')
-    // }
 
     try {
         const getUserFromRecycle = User.findUserFromBin(userId)
@@ -355,40 +179,7 @@ io.on(CONNECTION, (socket)=>{
     // when user refreshes the browser, the socket gets disconnected 
     // rejoin chats via this socket.
     socket.on(REJOIN_CHAT, (userId)=>{
-        // get the user rejoining from the recycle bin
-        // const userRejoining = getUserFromRecycleBin(recycleBin, userId)
-        
-        // if(!userRejoining){
-        //     console.log('No user found in recycle bin')
-        //     return null
-        // }
-
-        // const {username, accentColor, chats: userChats} = userRejoining
-
-        // create active user and add to active users
-        // let activeUser = createNewActiveUser(socket.id, userId, username, accentColor, [])
-        // activeUsers = addUserToActiveUsers(activeUsers, activeUser)
-
-        // for(const chat of userChats){
-        //     let {chatId, isAdmin} = chat
-        //     socket.join(chatId)
-        //     activeUsers = addChatToActiveUser(activeUsers, userId, chatId, isAdmin)
-
-        //     let oldMember = createNewMember(username, userId, isAdmin, "", accentColor)
-        //     chats = addMemberToChat(chats, chatId, oldMember)
-            
-        //     // emit a joined message and add to the chat messages
-        //     let rejoinMsg = createMessage('rejoined', chatId, userId, username, `${username} rejoined`, accentColor)
-        //     conversations = addMessageToConversation(conversations, rejoinMsg)
-
-        //     socket.to(chatId).emit(SOMEONE_REJOINED, {rejoinMsg, id:chatId, oldMember})     
-        // }
-
-        // // remove user chat from the recyclebin
-        // recycleBin = removeUserFromRecycleBin(recycleBin, userId)
-
-        // get the user rejoining from the recycle bin
-        // const user = User.findUserFromBin(userId)
+       
         User.recycleUserToAndFromBin(userId, "move from bin")
         const user = User.findUserById(userId)
 

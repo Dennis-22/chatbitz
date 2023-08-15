@@ -13,9 +13,14 @@ type MessageT = {
 
 type MessageType = 'leave' | 'join' | 'user-removed' | 'left-unexpectedly' | 'rejoined'
 
-// const messages = new Map<string, MessageT>()
 
-const messages = [{chatId:"chat2", messages: new Set<MessageT>()}]
+type Messages = {
+    chatId: string
+    messages: Set<MessageT>
+};
+
+// const messages = [{chatId:"chat2", messages: new Set<MessageT>()}]
+const messages:Messages[] = []
 
 
 export class Message{
