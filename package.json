@@ -2,7 +2,7 @@
   "name": "chatBitz",
   "version": "1.0.0",
   "description": "",
-  "main": "server/server.js",
+  "main": "server/dist/server.js",
   "scripts": {
     "client": "cd client && npm run dev",
     "build": "cd client && npm run build",
