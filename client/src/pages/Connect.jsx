@@ -6,7 +6,7 @@ import { useUserContext, useChatContext } from "../utils/hooks";
 import Form from "../components/connect/Form"
 import { ModalLoading } from "../components/global/Loading";
 import { _Connect } from "../utils/types"
-import { connectToServer, getApiErrorResponse, setItemToSessionStorage} from "../utils/helpers";
+import { connectToServer, getApiErrorResponse, extractDataFromServer, setItemToSessionStorage} from "../utils/helpers";
 import { createChatRoute, joinChatRoute } from "../utils/api";
 import { chatActions } from "../utils/actions";
 import logo from '../assets/logo.svg'
@@ -38,21 +38,22 @@ export default function Connect(){
     const [process, setProcess] = useState({loading:false, error:""})
     const navigate = useNavigate()
 
-
+    /**
+     * Connect to the server
+     * Set username in the reducer to the newly typed name
+     * Navigate to playground
+     */
     const handleCreateChat = async(e)=>{
         e.preventDefault()
-        // connect to the server
-        // set username in reducer to the newly typed name
-        // navigate to playground
-        
+  
         setProcess({loading:true, error:""})
         try {
         
-            let createChatProps = {...user, ...connectDetails}
+            const createChatProps = {...user, ...connectDetails}
+                        
+            const request = await createChatRoute(createChatProps)
+            const createdChat = extractDataFromServer(request)
             
-            let request = await createChatRoute(createChatProps)
-            let createdChat = request.data.data
-        
             // set user current chat to the chat 
             chatDispatch({type:chatActions.ADD_CHAT,
                 payload:{chat:createdChat, messages:[]}
@@ -91,10 +92,9 @@ export default function Connect(){
 
             setProcess({loading:true, error:""})
     
-            let request = await joinChatRoute(joinChatProps)
-           
-            let requestStatus = request.status
-            let joinedChat = request.data.data
+            const request = await joinChatRoute(joinChatProps)
+            const requestStatus = request.status
+            const joinedChat = extractDataFromServer(request)
 
             // provide password
             if(requestStatus === 204){

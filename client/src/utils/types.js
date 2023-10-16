@@ -13,7 +13,6 @@
 const _User = {
     username:"", 
     id:"", 
-    profilePhoto:"", 
     accentColor:""
 }
 

@@ -17,10 +17,9 @@ export default function UserProvider({children}){
         
         //create user defaults
         /** @type {import('../../utils/types').User} */
-        let user = {
+        const user = {
             username:'',
             id:idGenerator(), 
-            profilePhoto:'', 
             accentColor: accentColors[Math.floor(Math.random()*accentColors.length)]
         }
         setItemToSessionStorage('User', user)
