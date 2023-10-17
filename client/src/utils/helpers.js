@@ -23,6 +23,10 @@ function getItemFromStorage(key){
     return JSON.parse(data)
 }
 
+function extractDataFromServer(request){
+    return request.data.data
+}
+
 function getApiErrorResponse(error){
     console.log(error)
     // if error from the backend
@@ -31,4 +35,4 @@ function getApiErrorResponse(error){
 }
 
 
-export {connectToServer, idGenerator, setItemToSessionStorage, getItemFromStorage, getApiErrorResponse}
+export {connectToServer, idGenerator, setItemToSessionStorage, getItemFromStorage, extractDataFromServer, getApiErrorResponse}
