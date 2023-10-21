@@ -9,6 +9,7 @@ import { _Connect } from "../utils/types"
 import { connectToServer, getApiErrorResponse, extractDataFromServer, setItemToSessionStorage} from "../utils/helpers";
 import { createChatRoute, joinChatRoute } from "../utils/api";
 import { chatActions } from "../utils/actions";
+import { charsAllowed } from "../utils/constance";
 import logo from '../assets/logo.svg'
 
 
@@ -45,8 +46,9 @@ export default function Connect(){
      */
     const handleCreateChat = async(e)=>{
         e.preventDefault()
-  
-        setProcess({loading:true, error:""})
+        if(connectDetails.chatName.length > charsAllowed.chatName) return setProcess(()=> ({loading:false, error:`Chat name should not be more than ${charsAllowed.chatName} characters long`}))
+        
+        setProcess(()=>({loading:true, error:""}))
         try {
         
             const createChatProps = {...user, ...connectDetails}
@@ -70,7 +72,7 @@ export default function Connect(){
             navigate('/playground', {state:{connectType:create, chatId:createdChat.id}})
         } catch (error) {
             let errorMsg = getApiErrorResponse(error)
-            setProcess({loading:false, error:errorMsg})
+            setProcess(()=>({loading:false, error:errorMsg}))
         }
 
     }

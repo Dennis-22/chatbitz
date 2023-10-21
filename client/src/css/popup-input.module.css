@@ -14,7 +14,7 @@
 }
 
 .title{
-    color: var(--faint);
+    color: var(--white);
 }
 
 .inputs{
@@ -26,15 +26,16 @@
     display: block;
     width: 100%;
     font-family: 'Noto Sans Display', sans-serif;
+    font-size: var(--large);
     resize: none;
-    height: 180px;
+    height: 50vh;
     border-radius: 5px;
     outline: none;
     border: none;
     background-color: var(--background-color);
     padding: 20px;
     color: #fff;
-    margin-bottom: 10px;
+    margin-bottom: 20px;
 }
 
 .emojiPicker{

@@ -1,6 +1,6 @@
 .body{
     height: 100vh;
-    flex:1;
+    width: 100%;
     display: flex;
     flex-direction: column;
 }
@@ -9,9 +9,10 @@
 /* Styles For Header */
 
 .header{
-    background-color: var(--glass);
-    border-bottom: solid 1px var(--border-color);
     padding: 15px;
+    background-color: var(--glass-2);
+    border-bottom: solid 1px var(--border-color);
+    box-shadow: var(--box-shadow-6);
 }
 
 .head{
@@ -21,25 +22,22 @@
 .details{
     flex: 1;
     display: flex;
-    align-items: center;
+    gap: 10px;
     cursor: pointer;
 }
 
-.chatDetails{
-    width: 100%;
-    display: flex;
-    align-items: center;
+.detail{
+
 }
 
 .name{
-    margin: 0 10px;
+    font-size: var(--large);
+    font-weight: var(--bold-weight);
 }
 
-.utils{
-    margin-top: 10px;
-}
 
 .membersWrap{
+    margin-top: 5px;
     display: flex;
     align-items: center;
 }
@@ -68,10 +66,8 @@
     background-color: var(--glass);
     width: min(100%, 750px);
     border-radius: 5px;
-    margin-left: auto;
-    margin-right: auto;
-    border: solid 2px var(--border-color);
-    box-shadow: var(--box-shadow-2)
+    margin: 5px auto;
+    box-shadow: var(--box-shadow-6)
 }
 
 .input{
@@ -87,19 +83,23 @@
 
 .textInput{
     flex: 1;
-    padding: 8px 15px;
+    padding: 15px;
     background: transparent;
     color: #fff;
+    font-size: var(--large);
     border: none;
     outline: none;
 }
 
 .inputUtils{
-    width: 15%;
+    width: 20%;
+    margin: 10px;
+    padding: 8px;
+    background-color: var(--glass);
     display: flex;
     justify-content: space-around;
     align-items: center;
-    border-radius: 2px;
+    border-radius: 5px;
 }
 
 .inputIcon{
@@ -111,18 +111,23 @@
     width: fit-content;
     bottom:40px;
     right: 0;
-    width: 400px;
+    width: min(100%, 400px);
+}
+
+
+@media screen and (max-width: 600px) {
+    .inputUtils{width: 25%}
 }
 
 
 @media screen and (max-width: 450px) {
-    .textInput{padding: 12px 15px;}
-    .inputUtils{width: 23%;}
+    .textInput{padding: 12px}
     .emojiPicker{width: 300px;}
 }
 
 /* target to smallest device  (galaxy fold) */
-@media screen and (max-width: 290px) {
-    .textInput{padding: 8px 10px;}
-    .inputUtils{width: 30%;}
+@media screen and (max-width: 390px) {
+    .input{flex-direction: column; gap:10px}
+    .inputUtils{width: 50%; align-self: center;}
+    .emojiPicker{bottom: 90px;}
 }

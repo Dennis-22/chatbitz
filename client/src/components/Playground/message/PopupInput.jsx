@@ -11,7 +11,7 @@ export default function PopupInput({close, message, handleChange, handleSendMess
     <Modal>
       <div className={styles.container}>
         <div className={styles.head}>
-          <p className={styles.title}>Type more stuff here</p>
+          <p className={styles.title}>Type more here</p>
           <IconButton onClick={close}>
             <CloseRoundedIcon sx={{color:'rgb(143, 143, 143)'}}/>
           </IconButton>
@@ -26,7 +26,7 @@ export default function PopupInput({close, message, handleChange, handleSendMess
           />
         </div>
 
-        <Button variant="contained" onClick={handleSendMessage} style={{width:"100%"}}>
+        <Button variant="contained" onClick={handleSendMessage}>
           Send
         </Button>
       </div>

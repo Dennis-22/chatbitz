@@ -1,6 +1,9 @@
 .playground{
-    min-height:100vh;
-    max-width: 1600px;
+    padding: 0 10px;
     display:flex;
+}
+
+@media screen and (max-width: 600px) {
+    .playground{padding: 0 5px;}
 }
 

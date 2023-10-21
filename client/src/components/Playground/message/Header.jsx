@@ -43,10 +43,11 @@ export default function Header() {
               <MenuRoundedIcon sx={{color:"rgb(143, 143, 143)"}}/>
             </IconButton>
           }
-          <div className={styles.details}>
-            <div onClick={()=>toggleChatDetails(true)} className={styles.chatDetails}>
-              <ProfilePhoto name={chatName}/>
+          <div onClick={()=>toggleChatDetails(true)} className={styles.details}>
+            <ProfilePhoto name={chatName} size={36}/>
+            <div className={styles.detail}>
               <p className={styles.name} title="Chat title">{chatName}</p>
+              <p className={typing ? styles.typingShow : styles.typingHide}>A is typing</p>
             </div>
           </div>
 
@@ -58,15 +59,10 @@ export default function Header() {
     
         </div>
 
-      <div className={styles.utils}>
-          <div className={styles.membersWrap}>
-            <GroupRoundedIcon sx={{color:"rgb(143, 143, 143)"}} fontSize="small"/>
-            <p className={styles.members}>{members.length} members</p>
-          </div>
-          <p className={typing ? styles.typingShow : styles.typingHide}>
-            {typing}
-          </p>
-      </div>
+        <div className={styles.membersWrap}>
+          <GroupRoundedIcon sx={{color:"rgb(143, 143, 143)"}} fontSize="small"/>
+          <p className={styles.members}>{members.length} {members.length === 1 ? "member" : "members"}</p>
+        </div>
     </div>
 
   )

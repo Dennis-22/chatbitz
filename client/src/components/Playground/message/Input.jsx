@@ -62,22 +62,24 @@ export default function Input() {
               placeholder="Type a message"
               onKeyDown={(e)=>{if(e.key === 'Enter'){handleSendMessage()}}}
             />
-            <IconButton onClick={()=>setShowPopupInput(true)} title="expand input">
-              <OpenInFullRoundedIcon sx={{color:"#6f4c5b"}} className={styles.inputIcon} 
-                fontSize={deviceWidth > screenSizes.small ? 'medium' : 'small'}
-              />
-            </IconButton>
           </div>
 
           <div className={styles.inputUtils}>
+              <IconButton onClick={()=>setShowPopupInput(true)} title="expand input">
+                <OpenInFullRoundedIcon sx={{color:"#6f4c5b"}} className={styles.inputIcon} 
+                  fontSize={"small"}
+
+                />
+              </IconButton>
               <IconButton title="emojis" onClick={()=>setShowEmojiPopup(!showEmojiPopup)}>
                 <EmojiEmotionsRoundedIcon sx={{color:"#c4d325"}} className={styles.inputIcon} 
-                  fontSize={deviceWidth > screenSizes.small ? 'medium' : 'small'}
+                  fontSize={"small"}
                 />
               </IconButton>
               <IconButton onClick={handleSendMessage} title="send message">
                 <SendRoundedIcon sx={{color:"#3a8be0"}} className={styles.inputIcon} 
-                  fontSize={deviceWidth > screenSizes.small ? 'medium' : 'small'}
+                  fontSize={"small"}
+
                 />
               </IconButton>
           </div>

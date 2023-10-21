@@ -9,7 +9,7 @@
   --tiny: .8rem;
   --small: .9rem;
   --normal: 1rem;
-  --large: 1.2em;
+  --large: 1.2rem;
   --x-large:1.4rem;
   --xx-large:1.6rem;
   --xxx-large:1.8rem;
@@ -30,6 +30,7 @@
   --input-background: rgba(8, 8, 8, 0.651);
   --popup-background: rgba(0,0,0,0.5);
   --glass:rgba(8, 8, 8, 0.438);
+  --glass-2: rgba(8, 8, 8, 0.801);
   --border-color: rgba(143, 143, 143, 0.185);
 
   --brown:brown;

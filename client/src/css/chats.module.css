@@ -1,5 +1,5 @@
 .body{
-    width:27%;
+    width:22%;
     display: flex;
     flex-direction: column;
     height: 100vh;
@@ -7,11 +7,8 @@
 
 
 .logoWrap{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding-top: 30px;
-    padding-bottom: 30px;
+    margin-left: 10px;
+    padding: 20px 0;
     border-bottom: solid 1px var(--border-color);
 }
 
@@ -31,15 +28,14 @@
 .chat, .chatSelected{
     background-color: var(--glass);
     margin: 13px 0;
-    padding: 20px 10px;
+    padding: 15px 10px;
     display: flex;
     border-radius: 5px;
     cursor: pointer;
 }
 
 .chatSelected{ 
-    border: 3px solid var(--border-color);
-    box-shadow: var(--box-shadow-4);
+    border: 1px solid var(--border-color);
 }
 
 .chat:hover{border: 2px solid var(--border-color)}

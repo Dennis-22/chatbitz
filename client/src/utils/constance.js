@@ -7,7 +7,6 @@ const defMsgTypes = ['leave', 'join', 'user-removed', 'left-unexpectedly', 'rejo
 // character limit user can input for chat name and username
 const charsAllowed = {
     chatName:15,
-    username:10
 }
 
 const accentColors = [

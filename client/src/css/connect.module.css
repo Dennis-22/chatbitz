@@ -29,12 +29,16 @@
 .formContainer{
     margin: 2rem auto;
     padding: 22px;
-    width: min(50%, 400px)
+    width: min(95%, 400px)
 }
 
 .textShow{
+    color: rgb(245, 41, 41);
+    font-weight: var(--semi-bold-weight);
     text-align: center;
-    color: red;
+    padding: 10px 5px;
+    background-color: var(--glass);
+    border-radius: 5px;
 }
 
 .textHide{
@@ -64,9 +68,4 @@
     color: var(--white-2);
     margin-bottom: 5px;
     text-align: left;
-}
-
-
-@media screen and (max-width: 700px){
-    .formContainer{width: 95%;}
 }
