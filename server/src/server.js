@@ -51,7 +51,6 @@ app.get('/', (req, res) => {
 //create new chat
 app.post('/api/chat/create', async(req, res)=>{
     const {chatName, username, id, accentColor, secured} = req.body
-
     try {
         // check if a chat exist with the same name
         const existingChat = Chat.findChatByName(chatName)

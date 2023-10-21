@@ -3,20 +3,6 @@ import { IChat, ChatMember } from '../../types'
 
 const chats = new Map<string, IChat>()
 
-
-// chats.set("chat", {chatName:"name", 
-// id:"1",
-// members:[], 
-// secured:{status:true, password:"canopy"}}
-// )
-
-// chats.set("chat2", {chatName:"name2", 
-// id:"2",
-// members:[{id:"1", username:"ama", accentColor:"red", isAdmin:false}], 
-// secured:{status:false, password:""}}
-// )
-
-
 export class Chat{
     static getAllChats(){return chats}
 
