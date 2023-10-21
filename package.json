@@ -6,7 +6,7 @@
   "scripts": {
     "client": "cd client && npm run dev",
     "build": "cd client && npm run build",
-    "server": "cd server && nodemon server",
+    "server": "cd server && tsc && nodemon server",
     "start": "cd server && npm run start"
   },
   "keywords": [],
