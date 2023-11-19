@@ -1,5 +1,19 @@
 import crypto from 'crypto'
-import { IChat, ChatMember } from '../../types'
+
+type ChatMember = {
+    id:string
+    username:string
+    isAdmin:boolean
+    accentColor:string
+}
+
+interface IChat {
+    chatName:string
+    id:string
+    members:ChatMember[]
+    secured:{status:boolean, password:string}
+}
+
 
 const chats = new Map<string, IChat>()
 

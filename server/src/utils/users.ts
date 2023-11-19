@@ -1,4 +1,10 @@
-import { ActiveUser } from "../../types"
+type ActiveUser = {
+    socketId:string
+    id:string
+    username:string
+    accentColor:string
+    chats: {chatId:string, isAdmin:boolean}[]
+}
 
 const activeUsers = new Map<string, ActiveUser>()
 const usersBin = new Map<string, ActiveUser>()
@@ -117,25 +123,3 @@ export class User{
         }
     }
 }
-
-// console.log(User.findUserFromBin("on"))
-
-// console.log(User.findUserBySocketId("2"))
-
-// let newUser = User.createUser("socket", "1", "Dennis", "yellow")
-// User.recycleUserToAndFromBin(newUser.userId, "move to bin")
-// console.log(User.findUserById(newUser.userId, "bin"))
-// User.changeSocketId(newUser.userId, "1020")
-// User.addChatToUserChats(newUser.userId, {chatId:"3", isAdmin:false})
-// console.log(User.findUserById(newUser.userId))
-
-// console.log('before')
-// console.log(activeUsers)
-
-// User.addChatToUserChats("1", {chatId:'2', isAdmin:false})
-// console.log('after')
-// console.log(activeUsers)
-
-// User.removeChatFromUserChats("1", "1")
-// console.log("before before")
-// console.log(activeUsers)
